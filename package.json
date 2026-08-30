@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "validate:data": "node scripts/validate-data.mjs",
-    "sync:codeforces": "node scripts/sync-codeforces.mjs"
+    "sync:codeforces": "node scripts/sync-codeforces.mjs",
+    "sync:nowcoder": "node scripts/sync-nowcoder.mjs"
   },
   "dependencies": {
     "vue": "^3.5.11",

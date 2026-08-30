@@ -13,6 +13,7 @@ export interface Student {
   grade: number;
   codeforcesHandle?: string;
   nowcoderHandle?: string;
+  nowcoderUserId?: string;
   status: 'ACTIVE' | 'INACTIVE';
 }
 
@@ -101,6 +102,11 @@ export interface NowcoderContestScore {
   solvedCount: number;
   source: DataSource;
   isManualOverride: boolean;
+  nowcoderUserId?: string;
+  contestScore?: number;
+  platformScore?: number;
+  rating?: number;
+  ratingChange?: number;
   remark?: string;
   updatedAt: string;
 }

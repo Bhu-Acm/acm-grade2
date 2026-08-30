@@ -53,6 +53,7 @@
           <label>年级<input v-model.number="studentForm.grade" type="number" required /></label>
           <label>Codeforces Handle<input v-model.trim="studentForm.codeforcesHandle" /></label>
           <label>牛客 Handle<input v-model.trim="studentForm.nowcoderHandle" /></label>
+          <label>牛客用户 ID<input v-model.trim="studentForm.nowcoderUserId" placeholder="用于运行牛客抓取脚本" /></label>
           <button class="primary-button" type="submit">{{ editingStudentId ? '保存修改' : '加入榜单' }}</button>
         </form>
         <p v-if="studentMessage" class="form-message">{{ studentMessage }}</p>
@@ -300,7 +301,8 @@ const blankStudent = () => ({
   className: '',
   grade: 2026,
   codeforcesHandle: '',
-  nowcoderHandle: ''
+  nowcoderHandle: '',
+  nowcoderUserId: ''
 });
 const studentForm = reactive(blankStudent());
 const editingStudentId = ref('');
@@ -327,6 +329,7 @@ function saveStudent() {
     grade: studentForm.grade,
     codeforcesHandle: studentForm.codeforcesHandle || undefined,
     nowcoderHandle: studentForm.nowcoderHandle || undefined,
+    nowcoderUserId: studentForm.nowcoderUserId || undefined,
     status: 'ACTIVE'
   };
   if (data.students.some((item) => item.studentNo === student.studentNo && item.id !== student.id)) {

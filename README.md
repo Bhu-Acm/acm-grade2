@@ -111,6 +111,29 @@ docker compose up --build
 - 学生、权重、Codeforces 同步和 JSON 导入都只先修改本地草稿，点击提交后才会同步远端。
 - 牛客数据可在管理台“数据维护”中直接录入、编辑和删除；单场成绩按排名即时预览换算分。
 
+## 牛客用户页面抓取
+
+牛客用户比赛页的地址格式为 `https://ac.nowcoder.com/acm/contest/profile/{id}`。页面的比赛列表由页面脚本请求接口加载，脚本使用该接口抓取参加过的比赛，并转换为当前项目的 `nowcoder.json` 格式。
+
+```bash
+npm run sync:nowcoder -- --nowcoderId 347041329 --studentId stu-001 --periodId period-2026-spring
+```
+
+常用选项：
+
+```bash
+# 只抓 Rating 比赛
+npm run sync:nowcoder -- --nowcoderId 347041329 --studentId stu-001 --rating-only
+
+# 只预览，不写入文件；限制抓取前 1 页，适合测试账号和接口
+npm run sync:nowcoder -- --nowcoderId 347041329 --studentId stu-001 --max-pages 1 --dry-run
+
+# 按日期过滤
+npm run sync:nowcoder -- --nowcoderId 347041329 --studentId stu-001 --from 2026-01-01 --to 2026-08-30
+```
+
+脚本会分页请求并在请求之间等待，默认每页 100 条。已有人工数据不会被覆盖：`MANUAL`/手工覆盖优先于 `IMPORT`，`IMPORT` 优先于脚本抓取。抓取结果的 `source` 为 `SCRIPT`，管理员检查 diff 后再提交 GitHub。
+
 如果提交过程中途网络失败，可能已经有部分文件提交成功；重新从 GitHub 获取数据后再继续操作。
 
 ## 管理台工作流
