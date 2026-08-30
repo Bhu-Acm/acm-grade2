@@ -77,5 +77,30 @@
     "grade": 2026,
     "nowcoderHandle": "yzb0420",
     "status": "ACTIVE"
+  },
+  {
+    "id": "stu-1788075387296",
+    "studentNo": "sb1",
+    "name": "yzb",
+    "className": "12",
+    "grade": 2026,
+    "status": "ACTIVE"
+  },
+  {
+    "id": "stu-1788075520900",
+    "studentNo": "dxx",
+    "name": "dxx",
+    "className": "23",
+    "grade": 2026,
+    "status": "ACTIVE"
+  },
+  {
+    "id": "stu-1788075553736",
+    "studentNo": "12",
+    "name": "12",
+    "className": "12",
+    "grade": 2026,
+    "codeforcesHandle": "12",
+    "status": "ACTIVE"
   }
 ]
