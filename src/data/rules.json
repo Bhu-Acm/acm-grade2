@@ -1,13 +1,18 @@
 [
   {
-    "id": "rule-v1",
-    "version": "v1.0",
-    "name": "新生基础综合评分",
+    "id": "rule-v2-scheme-4",
+    "version": "v2.0",
+    "name": "方案4：CF进取综合评分",
     "status": "PUBLISHED",
     "weights": {
-      "attendance": 0.2,
-      "nowcoder": 0.3,
-      "codeforces": 0.5
+      "attendance": 0.15,
+      "nowcoderRating": 0.1,
+      "nowcoderPerformance": 0.1,
+      "codeforcesRating": 0.25,
+      "codeforcesSolved": 0.15,
+      "codeforcesDifficulty": 0.15,
+      "codeforcesContestPerformance": 0.15,
+      "participation": 0.05
     },
     "attendance": {
       "lateDeduction": 2,
@@ -16,13 +21,15 @@
     },
     "nowcoder": {
       "aggregation": "RECENT_N",
-      "recentN": 3
+      "recentN": 3,
+      "ratingBaseline": 1000,
+      "ratingDivisor": 20
     },
     "codeforces": {
-      "targetProblems": 100,
-      "targetDifficultyProblems": 100,
-      "quantityWeight": 0.6,
-      "difficultyWeight": 0.4,
+      "targetProblems": 120,
+      "targetDifficultyProblems": 60,
+      "ratingBaseline": 1000,
+      "ratingDivisor": 15,
       "difficultyBands": [
         {
           "min": 800,
@@ -44,6 +51,9 @@
           "coefficient": 1
         }
       ]
+    },
+    "participation": {
+      "targetContests": 20
     },
     "levels": [
       {
@@ -73,6 +83,6 @@
       }
     ],
     "missingDataPolicy": "ZERO",
-    "publishedAt": "2026-03-01T00:00:00Z"
+    "publishedAt": "2026-08-30T00:00:00Z"
   }
 ]
