@@ -58,5 +58,24 @@
     "codeforcesHandle": "yifan_code",
     "nowcoderHandle": "yifan",
     "status": "ACTIVE"
+  },
+  {
+    "id": "stu-1788070953888",
+    "studentNo": "1",
+    "name": "1",
+    "className": "1",
+    "grade": 2026,
+    "codeforcesHandle": "1",
+    "nowcoderHandle": "1",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "stu-1788071012589",
+    "studentNo": "·1·",
+    "name": "11",
+    "className": "11",
+    "grade": 2026,
+    "nowcoderHandle": "yzb0420",
+    "status": "ACTIVE"
   }
 ]
