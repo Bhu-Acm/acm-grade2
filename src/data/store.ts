@@ -64,6 +64,13 @@ function persist() {
   }
 }
 
+export function replaceAllData(data: AppData) {
+  const errors = validateAppData(data);
+  if (errors.length) throw new Error(errors[0]);
+  Object.assign(state, clone(data));
+  persist();
+}
+
 export function useDataStore() {
   return state;
 }

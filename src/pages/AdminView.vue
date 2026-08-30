@@ -231,6 +231,7 @@ import {
   getRule,
   removeNowcoderScore,
   resetMaintenanceData,
+  replaceAllData,
   replaceDataSet,
   upsertCodeforcesRecord,
   upsertNowcoderScore,
@@ -255,17 +256,20 @@ const commitMessage = ref('更新 ACM 新生训练数据');
 const githubBusy = ref(false);
 const githubAction = ref<'pull' | 'push' | ''>('');
 const githubMessage = ref('');
-const dataKeys: DataSetKey[] = ['students', 'periods', 'rules', 'attendance', 'nowcoder', 'codeforces'];
-
 async function pullFromGithub() {
   githubBusy.value = true;
   githubAction.value = 'pull';
   githubMessage.value = '';
   try {
     const remote = await fetchGithubData();
-    for (const key of dataKeys) {
-      if (remote[key] !== undefined) replaceDataSet(key, remote[key]);
-    }
+    replaceAllData({
+      students: remote.students ?? data.students,
+      periods: remote.periods ?? data.periods,
+      rules: remote.rules ?? data.rules,
+      attendance: remote.attendance ?? data.attendance,
+      nowcoder: remote.nowcoder ?? data.nowcoder,
+      codeforces: remote.codeforces ?? data.codeforces
+    });
     githubMessage.value = '已从 GitHub 获取最新数据，并覆盖当前浏览器草稿。';
   } catch (error) {
     githubMessage.value = error instanceof Error ? error.message : 'GitHub 数据获取失败。';
