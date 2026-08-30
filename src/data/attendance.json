@@ -2,7 +2,7 @@
   {
     "id": "att-001",
     "periodId": "period-2026-spring",
-    "studentId": "stu-001",
+    "studentId": "stu-1788070953888",
     "requiredCount": 12,
     "presentCount": 11,
     "lateCount": 1,
@@ -13,7 +13,7 @@
   {
     "id": "att-002",
     "periodId": "period-2026-spring",
-    "studentId": "stu-002",
+    "studentId": "stu-1788071012589",
     "requiredCount": 12,
     "presentCount": 10,
     "lateCount": 1,
@@ -24,7 +24,7 @@
   {
     "id": "att-003",
     "periodId": "period-2026-spring",
-    "studentId": "stu-003",
+    "studentId": "stu-1788075387296",
     "requiredCount": 12,
     "presentCount": 12,
     "lateCount": 0,
@@ -35,7 +35,7 @@
   {
     "id": "att-004",
     "periodId": "period-2026-spring",
-    "studentId": "stu-004",
+    "studentId": "stu-1788075520900",
     "requiredCount": 12,
     "presentCount": 9,
     "lateCount": 2,
@@ -46,7 +46,7 @@
   {
     "id": "att-005",
     "periodId": "period-2026-spring",
-    "studentId": "stu-005",
+    "studentId": "stu-1788075553736",
     "requiredCount": 12,
     "presentCount": 8,
     "lateCount": 0,
