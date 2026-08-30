@@ -1,0 +1,114 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+  font-family: 'Space Grotesk', 'Microsoft YaHei', sans-serif;
+  color: #e7f6f1;
+  background: #071011;
+  color-scheme: dark;
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; background: #071011; }
+button, input { font: inherit; }
+
+.site-shell {
+  min-height: 100vh;
+  padding: 48px clamp(20px, 5vw, 80px);
+  background:
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px),
+    radial-gradient(circle at 85% 8%, rgba(0, 232, 184, .12), transparent 26%),
+    #071011;
+  background-size: 32px 32px, 32px 32px, auto, auto;
+}
+
+.hero, .panel-heading, .profile-head, .total-score, .breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+.hero { max-width: 1440px; margin: 0 auto 48px; align-items: end; }
+.eyebrow, .student-meta, small { font-family: 'IBM Plex Mono', monospace; }
+.eyebrow { color: #79a69d; letter-spacing: .12em; font-size: 11px; margin: 0 0 12px; }
+.eyebrow span { color: #00e8b8; }
+h1, h2, p { margin-top: 0; }
+h1 { max-width: 700px; margin-bottom: 14px; font-size: clamp(42px, 7vw, 88px); line-height: .93; letter-spacing: -.06em; }
+h2 { margin-bottom: 0; font-size: 24px; }
+.hero-copy { max-width: 500px; color: #8aa8a2; line-height: 1.7; }
+.period-chip, .rule-label { border: 1px solid #1c3b38; color: #b9d8d0; padding: 12px 16px; border-radius: 3px; white-space: nowrap; font: 12px 'IBM Plex Mono', monospace; }
+.live-dot { display: inline-block; width: 7px; height: 7px; margin-right: 8px; background: #00e8b8; border-radius: 50%; box-shadow: 0 0 14px #00e8b8; }
+
+.stats-grid, .content-grid { max-width: 1440px; margin: 0 auto; display: grid; gap: 16px; }
+.stats-grid { grid-template-columns: repeat(4, 1fr); margin-bottom: 16px; }
+.stat-card, .panel { background: rgba(12, 28, 28, .82); border: 1px solid #193532; }
+.stat-card { min-height: 144px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; }
+.stat-card span { color: #84a69f; font-size: 13px; }
+.stat-card strong { color: #e7f6f1; font: 600 36px 'IBM Plex Mono', monospace; }
+.stat-card.accent strong { color: #00e8b8; text-shadow: 0 0 24px rgba(0,232,184,.3); }
+.stat-card small { color: #53736d; font-size: 10px; }
+.sync-time { color: #f0b35b !important; }
+
+.content-grid { grid-template-columns: minmax(0, 1.65fr) minmax(310px, .75fr); }
+.panel { min-width: 0; padding: 24px; }
+.scoreboard-panel { overflow: hidden; }
+.panel-heading { margin-bottom: 24px; align-items: end; }
+.rule-label { padding: 8px 10px; color: #6e9991; font-size: 10px; }
+.table-wrap { overflow-x: auto; margin: 0 -24px -24px; }
+table { width: 100%; border-collapse: collapse; min-width: 680px; }
+th { color: #587871; font: 10px 'IBM Plex Mono', monospace; text-align: left; letter-spacing: .08em; }
+th, td { padding: 14px 24px; border-top: 1px solid #142c2a; white-space: nowrap; }
+tbody tr { cursor: pointer; transition: background .2s ease; }
+tbody tr:hover, tbody tr.selected { background: rgba(0, 232, 184, .06); }
+td { color: #b3d0c9; font-size: 13px; }
+.rank-number { color: #668e86; font: 600 14px 'IBM Plex Mono', monospace; }
+.rank-1 { color: #f0b35b; font-size: 18px; }
+.rank-2 { color: #b8c9c5; font-size: 17px; }
+.rank-3 { color: #ba7d58; font-size: 16px; }
+.student-name { color: #e7f6f1; font-weight: 600; }
+.student-meta { margin-top: 4px; color: #54746e; font-size: 10px; }
+.score { color: #e7f6f1; font: 600 14px 'IBM Plex Mono', monospace; }
+.level { display: inline-grid; place-items: center; min-width: 27px; height: 27px; border: 1px solid currentColor; color: #9bb4ad; font: 600 12px 'IBM Plex Mono', monospace; }
+.level-S { color: #f0b35b; }
+.level-A { color: #00e8b8; }
+.level-B { color: #8bd8cf; }
+.level-C { color: #8ba6a0; }
+.level-D { color: #bd7666; }
+
+.detail-panel { align-self: start; min-height: 500px; }
+.profile-head { justify-content: start; margin-bottom: 36px; }
+.avatar { display: grid; place-items: center; width: 54px; height: 54px; background: #123c36; color: #00e8b8; font-size: 22px; }
+.muted { color: #72928b; font-size: 12px; }
+.total-score { align-items: end; padding-bottom: 24px; border-bottom: 1px solid #1b3935; }
+.total-score > span:first-child { color: #72928b; font-size: 12px; }
+.total-score strong { margin-left: auto; color: #00e8b8; font: 600 42px 'IBM Plex Mono', monospace; }
+.level.large { margin-left: 4px; width: 38px; height: 38px; font-size: 16px; }
+.breakdown { padding: 26px 0; display: grid; gap: 22px; }
+.breakdown-row { flex-wrap: wrap; gap: 8px 14px; }
+.breakdown-row > span { min-width: 105px; color: #b3d0c9; font-size: 12px; }
+.breakdown-row small { color: #557a71; margin-left: 4px; font-size: 10px; }
+.breakdown-row strong { margin-left: auto; color: #e7f6f1; font: 500 12px 'IBM Plex Mono', monospace; }
+.meter { flex-basis: 100%; height: 4px; background: #193532; }
+.meter i { display: block; height: 100%; background: #00e8b8; box-shadow: 0 0 12px rgba(0,232,184,.45); }
+.next-step { display: flex; gap: 12px; padding: 16px; background: #0b211e; border-left: 2px solid #f0b35b; }
+.next-icon { color: #f0b35b; font: 600 13px 'IBM Plex Mono', monospace; }
+.next-step strong { color: #f0d4a5; font-size: 12px; }
+.next-step p { margin: 5px 0 0; color: #7ea29a; font-size: 11px; line-height: 1.6; }
+
+@media (max-width: 1000px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .content-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .site-shell { padding: 28px 14px; }
+  .hero { display: block; margin-bottom: 30px; }
+  .hero h1 { font-size: 54px; }
+  .period-chip { display: inline-block; margin-top: 16px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .stat-card { min-height: 118px; padding: 16px; }
+  .stat-card strong { font-size: 25px; }
+  .panel { padding: 18px; }
+  th, td { padding-left: 18px; padding-right: 18px; }
+  .table-wrap { margin-left: -18px; margin-right: -18px; }
+}

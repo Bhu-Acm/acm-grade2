@@ -1,0 +1,10 @@
+[
+  {
+    "id": "period-2026-spring",
+    "name": "2026 新生春季训练",
+    "startDate": "2026-03-01",
+    "endDate": "2026-06-30",
+    "status": "ACTIVE",
+    "ruleVersionId": "rule-v1"
+  }
+]

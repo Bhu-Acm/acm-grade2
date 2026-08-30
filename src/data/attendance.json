@@ -1,0 +1,57 @@
+[
+  {
+    "id": "att-001",
+    "periodId": "period-2026-spring",
+    "studentId": "stu-001",
+    "requiredCount": 12,
+    "presentCount": 11,
+    "lateCount": 1,
+    "leaveCount": 0,
+    "absentCount": 0,
+    "updatedAt": "2026-08-29T09:00:00Z"
+  },
+  {
+    "id": "att-002",
+    "periodId": "period-2026-spring",
+    "studentId": "stu-002",
+    "requiredCount": 12,
+    "presentCount": 10,
+    "lateCount": 1,
+    "leaveCount": 0,
+    "absentCount": 1,
+    "updatedAt": "2026-08-29T09:00:00Z"
+  },
+  {
+    "id": "att-003",
+    "periodId": "period-2026-spring",
+    "studentId": "stu-003",
+    "requiredCount": 12,
+    "presentCount": 12,
+    "lateCount": 0,
+    "leaveCount": 0,
+    "absentCount": 0,
+    "updatedAt": "2026-08-29T09:00:00Z"
+  },
+  {
+    "id": "att-004",
+    "periodId": "period-2026-spring",
+    "studentId": "stu-004",
+    "requiredCount": 12,
+    "presentCount": 9,
+    "lateCount": 2,
+    "leaveCount": 1,
+    "absentCount": 0,
+    "updatedAt": "2026-08-29T09:00:00Z"
+  },
+  {
+    "id": "att-005",
+    "periodId": "period-2026-spring",
+    "studentId": "stu-005",
+    "requiredCount": 12,
+    "presentCount": 8,
+    "lateCount": 0,
+    "leaveCount": 1,
+    "absentCount": 3,
+    "updatedAt": "2026-08-29T09:00:00Z"
+  }
+]

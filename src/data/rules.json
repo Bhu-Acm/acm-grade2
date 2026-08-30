@@ -1,0 +1,43 @@
+[
+  {
+    "id": "rule-v1",
+    "version": "v1.0",
+    "name": "新生基础综合评分",
+    "status": "PUBLISHED",
+    "weights": {
+      "attendance": 0.2,
+      "nowcoder": 0.4,
+      "codeforces": 0.4
+    },
+    "attendance": {
+      "lateDeduction": 2,
+      "absentDeduction": 10,
+      "zeroRequiredScore": 100
+    },
+    "nowcoder": {
+      "aggregation": "AVERAGE",
+      "recentN": 3
+    },
+    "codeforces": {
+      "targetProblems": 100,
+      "targetDifficultyProblems": 100,
+      "quantityWeight": 0.6,
+      "difficultyWeight": 0.4,
+      "difficultyBands": [
+        { "min": 800, "max": 1000, "coefficient": 0.2 },
+        { "min": 1100, "max": 1300, "coefficient": 0.4 },
+        { "min": 1400, "max": 1600, "coefficient": 0.7 },
+        { "min": 1700, "coefficient": 1 }
+      ]
+    },
+    "levels": [
+      { "level": "S", "min": 90, "max": 101 },
+      { "level": "A", "min": 80, "max": 90 },
+      { "level": "B", "min": 70, "max": 80 },
+      { "level": "C", "min": 60, "max": 70 },
+      { "level": "D", "min": 0, "max": 60 }
+    ],
+    "missingDataPolicy": "ZERO",
+    "publishedAt": "2026-03-01T00:00:00Z"
+  }
+]

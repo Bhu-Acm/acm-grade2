@@ -1,0 +1,62 @@
+[
+  {
+    "id": "stu-001",
+    "studentNo": "2026001",
+    "name": "林宇辰",
+    "className": "计科2601",
+    "grade": 2026,
+    "codeforcesHandle": "newbie_lyc",
+    "nowcoderHandle": "lyc_acm",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "stu-002",
+    "studentNo": "2026002",
+    "name": "陈思远",
+    "className": "计科2601",
+    "grade": 2026,
+    "codeforcesHandle": "siyuan_cs",
+    "nowcoderHandle": "siyuan",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "stu-003",
+    "studentNo": "2026003",
+    "name": "周子昂",
+    "className": "计科2602",
+    "grade": 2026,
+    "codeforcesHandle": "zhouza",
+    "nowcoderHandle": "zhouza_acm",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "stu-004",
+    "studentNo": "2026004",
+    "name": "许安然",
+    "className": "计科2602",
+    "grade": 2026,
+    "codeforcesHandle": "anran_xu",
+    "nowcoderHandle": "anran",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "stu-005",
+    "studentNo": "2026005",
+    "name": "赵嘉禾",
+    "className": "软件2601",
+    "grade": 2026,
+    "codeforcesHandle": "jiahe_zz",
+    "nowcoderHandle": "jiahe",
+    "status": "ACTIVE"
+  },
+  {
+    "id": "stu-006",
+    "studentNo": "2026006",
+    "name": "王一帆",
+    "className": "软件2601",
+    "grade": 2026,
+    "codeforcesHandle": "yifan_code",
+    "nowcoderHandle": "yifan",
+    "status": "ACTIVE"
+  }
+]
