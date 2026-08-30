@@ -1,36 +1,31 @@
-import {
-  activePeriod,
-  activeRule,
-  attendanceRecords,
-  codeforcesRecords,
-  nowcoderScores,
-  periods,
-  rules,
-  students
-} from '../data';
+import { getActivePeriod, getRule, useDataStore } from '../data/store';
 import { buildScoreboard } from './ranking';
 import type { ExamPeriod, ScoreboardRow, ScoringRule } from '../types';
 
-export function getPeriod(periodId = activePeriod.id): ExamPeriod {
-  const period = periods.find((item) => item.id === periodId);
-  return period ?? activePeriod;
+export function getPeriod(periodId = getActivePeriod().id): ExamPeriod {
+  const data = useDataStore();
+  return data.periods.find((item) => item.id === periodId) ?? getActivePeriod();
 }
 
-export function getRule(ruleId = activeRule.id): ScoringRule {
-  return rules.find((rule) => rule.id === ruleId) ?? activeRule;
+export function getScoringRule(ruleId = getActivePeriod().ruleVersionId): ScoringRule {
+  return getRule(ruleId);
 }
 
 export function loadScoreboard(
-  periodId = activePeriod.id,
-  rule = getRule(getPeriod(periodId).ruleVersionId)
+  periodId = getActivePeriod().id,
+  rule = getScoringRule(getPeriod(periodId).ruleVersionId)
 ): ScoreboardRow[] {
-  return buildScoreboard(students, rule, {
-    attendance: attendanceRecords.filter((item) => item.periodId === periodId),
-    nowcoder: nowcoderScores.filter((item) => item.periodId === periodId),
-    codeforces: codeforcesRecords.filter((item) => item.periodId === periodId)
+  const data = useDataStore();
+  return buildScoreboard(data.students, rule, {
+    attendance: data.attendance.filter((item) => item.periodId === periodId),
+    nowcoder: data.nowcoder.filter((item) => item.periodId === periodId),
+    codeforces: data.codeforces.filter((item) => item.periodId === periodId)
   });
 }
 
-export function getStudentScore(studentId: string, periodId = activePeriod.id): ScoreboardRow | undefined {
+export function getStudentScore(
+  studentId: string,
+  periodId = getActivePeriod().id
+): ScoreboardRow | undefined {
   return loadScoreboard(periodId).find((row) => row.studentId === studentId);
 }

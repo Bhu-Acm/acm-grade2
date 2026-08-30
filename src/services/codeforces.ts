@@ -24,6 +24,19 @@ export interface CodeforcesRatingChange {
 export interface CodeforcesApiResponse<T> {
   status: 'OK' | 'FAILED';
   result: T;
+  comment?: string;
+}
+
+const API_DELAY_MS = 2100;
+
+function wait(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+async function requestJson<T>(url: string): Promise<CodeforcesApiResponse<T>> {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Codeforces HTTP ${response.status}`);
+  return (await response.json()) as CodeforcesApiResponse<T>;
 }
 
 export function normalizeCodeforcesApi(
@@ -68,22 +81,26 @@ export async function fetchCodeforcesData(handle: string): Promise<{
   ratingHistory: CodeforcesRatingChange[];
 }> {
   const base = 'https://codeforces.com/api';
-  const [userResponse, submissionResponse, ratingResponse] = await Promise.all([
-    fetch(`${base}/user.info?handles=${encodeURIComponent(handle)}`),
-    fetch(`${base}/user.status?handle=${encodeURIComponent(handle)}&from=1&count=10000`),
-    fetch(`${base}/user.rating?handle=${encodeURIComponent(handle)}`)
-  ]);
+  const user = await requestJson<CodeforcesUserInfo[]>(
+    `${base}/user.info?handles=${encodeURIComponent(handle)}`
+  );
+  await wait(API_DELAY_MS);
+  const submissions = await requestJson<CodeforcesSubmission[]>(
+    `${base}/user.status?handle=${encodeURIComponent(handle)}&from=1&count=10000`
+  );
+  await wait(API_DELAY_MS);
+  const ratingHistory = await requestJson<CodeforcesRatingChange[]>(
+    `${base}/user.rating?handle=${encodeURIComponent(handle)}`
+  );
 
-  const user = (await userResponse.json()) as CodeforcesApiResponse<CodeforcesUserInfo[]>;
-  const submissions = (await submissionResponse.json()) as CodeforcesApiResponse<
-    CodeforcesSubmission[]
-  >;
-  const ratingHistory = (await ratingResponse.json()) as CodeforcesApiResponse<
-    CodeforcesRatingChange[]
-  >;
-
-  if (user.status !== 'OK' || submissions.status !== 'OK' || ratingHistory.status !== 'OK') {
-    throw new Error('Codeforces API 返回失败');
+  if (user.status !== 'OK') {
+    throw new Error(user.comment || 'Codeforces 用户不存在或 API 返回失败');
+  }
+  if (submissions.status !== 'OK') {
+    throw new Error(submissions.comment || 'Codeforces 提交记录读取失败');
+  }
+  if (ratingHistory.status !== 'OK') {
+    throw new Error(ratingHistory.comment || 'Codeforces 比赛记录读取失败');
   }
 
   return {

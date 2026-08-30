@@ -8,10 +8,12 @@
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "validate:data": "node scripts/validate-data.mjs"
+    "validate:data": "node scripts/validate-data.mjs",
+    "sync:codeforces": "node scripts/sync-codeforces.mjs"
   },
   "dependencies": {
-    "vue": "^3.5.11"
+    "vue": "^3.5.11",
+    "vue-router": "^4.4.5"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.1.4",
