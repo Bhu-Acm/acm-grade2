@@ -76,6 +76,20 @@ npm run dev
 
 打开管理台：`http://localhost:5173/admin`
 
+## Docker 部署
+
+```bash
+docker compose up --build
+```
+
+浏览器访问 `http://localhost:8080/`
+
+## GitHub Pages 部署
+
+仓库已包含 `.github/workflows/deploy-pages.yml`。推送到 `main` 后会自动执行数据校验、测试、构建并部署到 GitHub Pages。
+
+第一次使用时，在 GitHub 仓库进入 `Settings` → `Pages`，将 `Source` 设置为 `GitHub Actions`。部署完成后，页面地址可在 workflow 的 deployment environment 中查看。
+
 ## GitHub 数据维护约定
 
 1. 先修改 `src/data/*.json`，不要直接修改评分公式。
