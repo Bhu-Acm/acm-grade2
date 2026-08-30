@@ -21,7 +21,7 @@ describe('score engine', () => {
       },
       rule.attendance
     );
-    expect(result).toEqual({ rate: 90, score: 78 });
+    expect(result).toEqual({ rate: 90, score: 80 });
   });
 
   it('supports average nowcoder aggregation', () => {

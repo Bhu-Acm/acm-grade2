@@ -5,17 +5,17 @@
     "name": "新生基础综合评分",
     "status": "PUBLISHED",
     "weights": {
-      "attendance": 0.1,
+      "attendance": 0.2,
       "nowcoder": 0.3,
-      "codeforces": 0.6
+      "codeforces": 0.5
     },
     "attendance": {
       "lateDeduction": 2,
-      "absentDeduction": 10,
+      "absentDeduction": 8,
       "zeroRequiredScore": 100
     },
     "nowcoder": {
-      "aggregation": "AVERAGE",
+      "aggregation": "RECENT_N",
       "recentN": 3
     },
     "codeforces": {

@@ -87,7 +87,7 @@
       <article class="panel admin-panel">
         <p class="eyebrow">RULE VERSION {{ rule.version }}</p>
         <h2>调整评分权重</h2>
-        <p class="muted">权重总和必须等于 100%，保存后排行榜即时重算。</p>
+        <p class="muted">当前默认方案：出勤 20%，牛客 30%，Codeforces 50%；保存后排行榜即时重算。</p>
         <div class="weight-form">
           <label>出勤<input v-model.number="weightForm.attendance" type="number" min="0" max="1" step="0.05" /></label>
           <label>牛客<input v-model.number="weightForm.nowcoder" type="number" min="0" max="1" step="0.05" /></label>
@@ -105,7 +105,7 @@
         <div v-for="item in weightItems" :key="item.label" class="preview-row">
           <span>{{ item.label }}</span><strong>{{ item.value }}%</strong><i :style="{ width: `${item.value}%` }"></i>
         </div>
-        <p class="rule-note">保存后的规则会在提交更改时同步为 `rules.json`。</p>
+        <p class="rule-note">牛客默认按最近 3 场平均，规则会在提交更改时同步为 `rules.json`。</p>
       </article>
     </section>
 

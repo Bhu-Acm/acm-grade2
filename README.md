@@ -46,8 +46,8 @@ src/
 
 ```text
 出勤       20%
-牛客竞赛   40%
-Codeforces 40%
+牛客竞赛   30%
+Codeforces 50%
 ```
 
 Codeforces 数据由官方 API 获取后转换为仓库内快照。浏览器端直接请求 API 适合开发和低频手动同步；正式部署时建议用 GitHub Actions 定时执行同步脚本，再提交快照，避免公开页面受跨域、限流和 API 波动影响。

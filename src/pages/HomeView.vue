@@ -150,7 +150,7 @@ const breakdownItems = computed(() => {
   if (!row) return [];
   return [
     { label: '出勤表现', weight: `${rule.value.weights.attendance * 100}%`, value: row.breakdown.attendance },
-    { label: '牛客竞赛', weight: `${rule.value.weights.nowcoder * 100}%`, value: row.breakdown.nowcoder },
+    { label: '牛客最近 3 场', weight: `${rule.value.weights.nowcoder * 100}%`, value: row.breakdown.nowcoder },
     { label: 'Codeforces', weight: `${rule.value.weights.codeforces * 100}%`, value: row.breakdown.codeforces }
   ];
 });
@@ -162,7 +162,7 @@ const advice = computed(() => {
   );
   const messages: Record<string, string> = {
     出勤表现: '稳定参加训练，先把学习节奏固定下来。',
-    牛客竞赛: '多参加周赛并复盘错题，把比赛经验转成解题速度。',
+    '牛客最近 3 场': '多参加周赛并复盘错题，把近期状态稳住。',
     Codeforces: '先完成基础题目标，再逐步挑战更高难度题目。'
   };
   return {
