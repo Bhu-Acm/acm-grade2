@@ -76,6 +76,10 @@ npm run dev
 
 打开管理台：`http://localhost:5173/admin`
 
+管理入口：先访问 `http://localhost:5173/admin-access`，默认密码为 `acm2026`。部署前建议复制 `.env.example` 为 `.env` 并修改 `VITE_ADMIN_PASSWORD`。
+
+注意：纯静态前端无法隐藏管理密码，密码门禁只适合低风险的小范围维护，不等同于真正的身份认证。公开部署时不要把高权限凭据写进前端。
+
 ## Docker 部署
 
 ```bash
@@ -97,6 +101,17 @@ docker compose up --build
 3. 牛客数据重复记录默认拒绝，使用唯一的 `id`。
 4. Codeforces 快照保留 `source`、`fetchedAt` 和 `isManualOverride`。
 5. 每次数据变更都运行 `npm run validate:data && npm run test && npm run build`。
+
+## 管理台同步 GitHub
+
+管理台顶部填写 GitHub fine-grained personal access token，至少授予仓库 `Contents: Read and write` 权限。Token 不会写入 `localStorage`、JSON 或 GitHub，只在当前页面内存中使用。
+
+- `从 GitHub 获取数据`：读取 `main` 分支 `src/data/*.json`，覆盖当前浏览器草稿。
+- `提交更改到 GitHub`：依次更新六个数据文件，GitHub 会为每个文件生成内容提交。
+- 学生、权重、Codeforces 同步和 JSON 导入都只先修改本地草稿，点击提交后才会同步远端。
+- 牛客数据可在管理台“数据维护”中直接录入、编辑和删除；单场成绩按排名即时预览换算分。
+
+如果提交过程中途网络失败，可能已经有部分文件提交成功；重新从 GitHub 获取数据后再继续操作。
 
 ## 管理台工作流
 

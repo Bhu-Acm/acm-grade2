@@ -28,6 +28,37 @@ button, input { font: inherit; }
 .topnav { display: flex; gap: 22px; }
 .topnav a { color: #6f9189; font: 12px 'IBM Plex Mono', monospace; }
 .topnav a.router-link-active { color: #00e8b8; }
+.access-shell {
+  min-height: calc(100vh - 77px);
+  display: grid;
+  place-items: center;
+  padding: 30px 20px;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(0, 232, 184, .09), transparent 30%),
+    #071011;
+}
+.access-card {
+  width: min(440px, 100%);
+  padding: 38px;
+  border: 1px solid #1c3b38;
+  background: rgba(12, 28, 28, .9);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .25);
+}
+.access-mark { margin: 30px 0 18px; color: #00e8b8; font: 600 30px 'IBM Plex Mono', monospace; }
+.access-card h1 { margin-bottom: 12px; font-size: 42px; letter-spacing: -.05em; }
+.access-form { display: grid; gap: 14px; margin: 28px 0 18px; }
+.access-form label { display: grid; gap: 8px; color: #91b1a9; font-size: 12px; }
+.access-form input, .github-actions input {
+  width: 100%;
+  border: 1px solid #244640;
+  border-radius: 2px;
+  padding: 12px;
+  outline: 0;
+  background: #081715;
+  color: #e7f6f1;
+}
+.access-form input:focus, .github-actions input:focus { border-color: #00a987; }
+.access-card .back-link { display: inline-block; margin-top: 22px; }
 
 .site-shell {
   min-height: 100vh;
@@ -116,6 +147,7 @@ td { color: #b3d0c9; font-size: 13px; }
 .admin-shell { max-width: 1440px; margin: 0 auto; padding: 52px clamp(20px, 5vw, 80px); }
 .admin-header { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 34px; }
 .admin-header h1 { margin-bottom: 12px; font-size: clamp(42px, 6vw, 68px); }
+.admin-header-actions { display: flex; align-items: center; gap: 20px; }
 .back-link { color: #00e8b8; font: 12px 'IBM Plex Mono', monospace; }
 .admin-tabs { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid #193532; }
 .admin-tabs button, .text-button, .secondary-button, .primary-button {
@@ -133,6 +165,30 @@ td { color: #b3d0c9; font-size: 13px; }
 .admin-tabs button.active { color: #00e8b8; border-bottom-color: #00e8b8; }
 .admin-grid { display: grid; grid-template-columns: minmax(300px, .75fr) minmax(0, 1.25fr); gap: 16px; }
 .weights-grid { grid-template-columns: 1fr 1fr; }
+.github-bar { display: grid; grid-template-columns: minmax(220px, .8fr) minmax(0, 1.2fr); gap: 24px; margin-bottom: 16px; }
+.github-bar strong { color: #d3ebe4; font: 500 13px 'IBM Plex Mono', monospace; }
+.github-bar .muted { margin: 9px 0 0; line-height: 1.6; }
+.github-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-content: center; }
+.github-actions .secondary-button, .github-actions .primary-button { min-height: 42px; }
+.github-bar > .form-message { grid-column: 1 / -1; margin: 0; }
+.nowcoder-panel { grid-column: 1 / -1; }
+.nowcoder-records-panel { grid-column: 1 / -1; }
+.nowcoder-form .full-field { grid-column: 1 / -1; }
+.nowcoder-preview {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 13px 14px;
+  border-left: 2px solid #f0b35b;
+  background: #0b211e;
+  color: #8eafa7;
+  font-size: 12px;
+}
+.nowcoder-preview strong { color: #f0b35b; font: 600 18px 'IBM Plex Mono', monospace; }
+.nowcoder-preview small { color: #587a72; font-size: 10px; }
+.row-actions { display: flex; gap: 10px; }
+.empty-cell { padding: 30px 24px; color: #62857d; text-align: center; }
 .admin-panel { min-width: 0; }
 .admin-form, .weight-form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .admin-form label, .weight-form label, .admin-panel > label { display: grid; gap: 7px; color: #91b1a9; font-size: 12px; }
@@ -177,6 +233,7 @@ td { color: #b3d0c9; font-size: 13px; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .content-grid { grid-template-columns: 1fr; }
   .admin-grid, .weights-grid { grid-template-columns: 1fr; }
+  .github-bar { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
   .topbar { padding: 18px 14px; }
@@ -193,10 +250,15 @@ td { color: #b3d0c9; font-size: 13px; }
   .table-wrap { margin-left: -18px; margin-right: -18px; }
   .admin-shell { padding: 32px 14px; }
   .admin-header { display: block; }
+  .admin-header-actions { display: flex; justify-content: space-between; margin-top: 20px; }
   .back-link { display: inline-block; margin-top: 20px; }
   .admin-tabs { overflow-x: auto; }
   .admin-tabs button { white-space: nowrap; padding-left: 12px; padding-right: 12px; }
   .admin-form, .weight-form { grid-template-columns: 1fr; }
+  .nowcoder-form .full-field, .nowcoder-preview { grid-column: auto; }
+  .nowcoder-preview { display: grid; gap: 5px; }
   .export-actions { align-items: stretch; flex-direction: column; }
   .export-actions button { width: 100%; }
+  .access-card { padding: 26px; }
+  .github-actions { grid-template-columns: 1fr; }
 }

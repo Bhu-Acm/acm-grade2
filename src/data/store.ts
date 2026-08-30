@@ -110,6 +110,29 @@ export function upsertCodeforcesRecord(record: CodeforcesRecord) {
   persist();
 }
 
+export function upsertNowcoderScore(record: NowcoderContestScore) {
+  const duplicateIndex = state.nowcoder.findIndex(
+    (item) =>
+      item.periodId === record.periodId &&
+      item.studentId === record.studentId &&
+      item.contestId === record.contestId &&
+      item.id !== record.id
+  );
+  if (duplicateIndex !== -1) {
+    throw new Error('该学生在这场牛客比赛中已有记录，请改为编辑原记录。');
+  }
+
+  const index = state.nowcoder.findIndex((item) => item.id === record.id);
+  if (index === -1) state.nowcoder.push(clone(record));
+  else state.nowcoder[index] = clone(record);
+  persist();
+}
+
+export function removeNowcoderScore(id: string) {
+  state.nowcoder = state.nowcoder.filter((item) => item.id !== id) as never;
+  persist();
+}
+
 export function resetMaintenanceData() {
   const fresh = initialData();
   Object.assign(state, fresh);
