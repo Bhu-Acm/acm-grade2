@@ -1,242 +1,227 @@
 # ACM Grade 2 交接文档
 
-更新时间：2026-08-30
+更新时间：2026-08-31
 
-## 项目基线
+## 当前状态
 
-- 项目目录：`D:\acm lab\acm-grade\acm-grade2`
-- GitHub：`https://github.com/Bhu-Acm/acm-grade2.git`
-- 分支：`main`
-- Git 身份：`mms <1605585155@qq.com>`
-- 交接前基线提交：`8610e0325bb063f715d3da2259bd759370cbb5ed`
-- 本地与 `origin/main` 已确认同步，工作区干净。
-- 部署域名：`mms0420.cn:789`
+- 本地目录：`D:\acm lab\acm-grade\acm-grade2`
+- 当前分支：`main`
+- 当前站点为纯静态前端，构建产物输出到 `dist/`
+- 计划部署地址：`mms0420.cn:789`
+- 最近一次本地验证已通过：
+  - `npm run validate:data`
+  - `npm test`
+  - `npm run build`
 
-## 项目定位
+## 交接重点
 
-面向 ACM 新生公开展示的综合评分和排行榜系统。数据直接保存在 GitHub 仓库的 `src/data/*.json`，不使用数据库；Vue 前端负责展示和管理台，TypeScript 纯函数负责评分计算。
+- 这是一个前端静态站点，业务数据直接落在仓库 `src/data/*.json`。
+- 页面展示、评分计算、数据校验都在前端和本地脚本内完成，没有独立后端服务。
+- 管理台里的“本地一键同步”依赖 `vite dev server` 中间件，只适用于开发环境。
+- 生产部署只需要新的 `dist/`，计划挂载地址仍是 `mms0420.cn:789`。
 
-设计原则：功能简单、方便修 bug、公开展示有竞赛压力，同时给新生明确训练目标。
+## 已完成事项
 
-## 技术栈与命令
+### 1. 评分与榜单
 
-- Vue 3、TypeScript、Vite、Vue Router、Vitest
-- Node.js 20+
+- 评分规则已统一切到方案 4，并在代码、规则数据、测试中同步。
+- 首页已支持：
+  - `近 7 天`
+  - `近 30 天`
+  - `全部`
+  - 趋势图
+  - 点击学生后查看分数拆解
+  - 点击学生后查看牛客 / Codeforces 原始指标
+- 首页学生详情已展示：
+  - 牛客 Rating
+  - 牛客总解题数
+  - 牛客比赛数
+  - 牛客平均单场分
+  - CF Rating
+  - CF Max Rating
+  - CF 总过题数
+  - CF 比赛数
+  - CF 各难度过题数
+
+### 2. 管理台
+
+- 学生模块已去掉 `nowcoderHandle`，仅保留：
+  - `codeforcesHandle`
+  - `nowcoderUserId`
+- 规则模块已补充各项评分公式展示，包括：
+  - 考勤
+  - 牛客 Rating
+  - 牛客比赛表现
+  - CF Rating
+  - CF 过题量
+  - CF 难度
+  - CF 比赛表现
+  - 参赛次数
+  - 总分归一化公式
+- 自动录入模块已支持：
+  - 单人 Codeforces 在线同步
+  - 本地一键同步全部学生
+  - 牛客命令生成
+  - Codeforces 命令生成
+- 命令生成已统一改成：
+
+```bash
+npm --prefix "D:\acm lab\acm-grade\acm-grade2" run ...
+```
+
+### 3. Codeforces 同步
+
+- 已给 `CodeforcesRecord` 增加：
+  - `solvedHistory`
+  - `contestHistory`
+  - `snapshots`
+- 首次同步会拉完整历史。
+- 后续同步会基于已有记录和 `fetchedAt` 做增量：
+  - 提交记录只处理上次同步之后的新提交
+  - 比赛百分位只补当前窗口内还没有缓存的比赛
+- 如果旧记录缺少 `solvedHistory` 或 `contestHistory`，会自动退回一次全量同步。
+
+### 4. 牛客同步
+
+- 已支持按学生、周期做增量抓取。
+- 默认从该学生当前周期最后一场已记录 `contestDate` 开始继续抓取。
+- 同日比赛按 `contestId` 去重合并。
+
+### 5. GitHub 数据同步
+
+- 浏览器内数据同步已重写为：
+  - 拉取：GitHub `Contents API`
+  - 提交：GitHub `Git Data API`
+- 6 个 JSON 会作为一次提交原子更新，避免逐文件提交的半成功状态。
+
+当前这 6 个 JSON 为：
+
+- `src/data/students.json`
+- `src/data/attendance.json`
+- `src/data/nowcoder.json`
+- `src/data/codeforces.json`
+- `src/data/rules.json`
+- `src/data/periods.json`
+
+## 本轮重点修复
+
+### 1. Codeforces 增量同步误判
+
+之前出现过一个实际问题：
+
+- 旧 `codeforces.json` 里只有聚合结果，没有 `solvedHistory` / `contestHistory`
+- 但同步逻辑仍把这类记录当成“可增量”
+- 结果会导致第二次同步时只看增量区间，累计总题数错误，甚至出现 `0` 题
+
+已修正为：
+
+- 只有当旧记录满足以下条件才允许增量：
+  - `handle` 匹配
+  - 存在 `solvedHistory`
+  - 存在 `contestHistory`
+  - 存在有效 `fetchedAt`
+- 否则强制退回全量同步一次
+
+### 2. CF 难度题数统计错误
+
+之前的实际 bug：
+
+- `difficultyStats` 只统计了“有 Codeforces rating 的题”
+- 对于无 rating 的唯一 AC 题，之前直接被漏掉
+- 所以“各难度题数之和”可能小于“CF 总过题数”
+
+已修正为：
+
+- 新同步逻辑会把无 rating 的题归入 `UNRATED`
+- 首页详情会展示 `UNRATED`
+- 对于旧聚合数据，如果 `totalSolved > sum(difficultyStats)`，会在窗口计算阶段自动补一个 `UNRATED` 差值，保证展示数量与总题数一致
+
+### 3. 同一学生多条 CF 记录取错
+
+之前排行榜内部只按 `studentId` 取第一条 CF 记录，存在风险：
+
+- 如果同一学生同一周期残留多条记录
+- 或学生换过 handle
+- 首页可能直接拿错旧记录
+
+已修正为：
+
+- 优先选 `handle` 匹配且 `fetchedAt` 最新的记录
+- 保存 CF 记录时会替换同学生同周期的旧记录，避免重复残留
+
+## 当前关键文件
+
+### 评分与榜单
+
+- [src/domain/score.ts](/D:/acm%20lab/acm-grade/acm-grade2/src/domain/score.ts)
+- [src/domain/ranking.ts](/D:/acm%20lab/acm-grade/acm-grade2/src/domain/ranking.ts)
+- [src/domain/scoreboard.ts](/D:/acm%20lab/acm-grade/acm-grade2/src/domain/scoreboard.ts)
+- [tests/score.spec.ts](/D:/acm%20lab/acm-grade/acm-grade2/tests/score.spec.ts)
+
+### 数据与存储
+
+- [src/data/store.ts](/D:/acm%20lab/acm-grade/acm-grade2/src/data/store.ts)
+- [src/data/rules.json](/D:/acm%20lab/acm-grade/acm-grade2/src/data/rules.json)
+- [src/data/periods.json](/D:/acm%20lab/acm-grade/acm-grade2/src/data/periods.json)
+- [src/data/students.json](/D:/acm%20lab/acm-grade/acm-grade2/src/data/students.json)
+
+### 管理台与首页
+
+- [src/pages/AdminView.vue](/D:/acm%20lab/acm-grade/acm-grade2/src/pages/AdminView.vue)
+- [src/pages/HomeView.vue](/D:/acm%20lab/acm-grade/acm-grade2/src/pages/HomeView.vue)
+- [src/styles.css](/D:/acm%20lab/acm-grade/acm-grade2/src/styles.css)
+
+### 同步链路
+
+- [src/services/codeforces.ts](/D:/acm%20lab/acm-grade/acm-grade2/src/services/codeforces.ts)
+- [src/services/github.ts](/D:/acm%20lab/acm-grade/acm-grade2/src/services/github.ts)
+- [src/services/localSync.ts](/D:/acm%20lab/acm-grade/acm-grade2/src/services/localSync.ts)
+- [scripts/lib/codeforces-sync.mjs](/D:/acm%20lab/acm-grade/acm-grade2/scripts/lib/codeforces-sync.mjs)
+- [scripts/lib/nowcoder-sync.mjs](/D:/acm%20lab/acm-grade/acm-grade2/scripts/lib/nowcoder-sync.mjs)
+- [scripts/lib/local-sync.mjs](/D:/acm%20lab/acm-grade/acm-grade2/scripts/lib/local-sync.mjs)
+- [scripts/sync-codeforces.mjs](/D:/acm%20lab/acm-grade/acm-grade2/scripts/sync-codeforces.mjs)
+- [scripts/sync-nowcoder.mjs](/D:/acm%20lab/acm-grade/acm-grade2/scripts/sync-nowcoder.mjs)
+- [vite.config.ts](/D:/acm%20lab/acm-grade/acm-grade2/vite.config.ts)
+
+## 已知限制
+
+- 考勤当前仍是周期聚合记录，不是逐次明细，所以在 `7d / 30d / all` 三个窗口下保持不变。
+- Codeforces 首次同步历史很多的账号仍可能比较慢，因为需要补部分 `contest.standings` 百分位。
+- 本地一键同步只在 `npm run dev` 的开发环境可用，生产构建不会暴露该接口。
+- `dist/` 不在 Git 跟踪内，部署时需要先本地 `npm run build`。
+
+## 常用命令
 
 ```bash
 npm install
 npm run dev
 npm run validate:data
-npm run test
+npm test
 npm run build
-npm run preview
-```
-
-提交前执行：
-
-```bash
-npm run validate:data && npm run test && npm run build
-```
-
-`dist/` 被 `.gitignore` 忽略，部署前本地执行 `npm run build` 重新生成。
-
-## 目录结构
-
-```text
-src/data/              JSON 数据
-src/domain/            评分、排名、榜单、校验
-src/data/store.ts       管理台 localStorage 草稿 store
-src/services/github.ts  GitHub 数据读写
-src/services/codeforces.ts  Codeforces API 转换
-src/pages/HomeView.vue  公开展示区
-src/pages/AdminAccessView.vue  管理台密码入口
-src/pages/AdminView.vue 管理台
-scripts/sync-codeforces.mjs  Codeforces 命令行同步
-scripts/sync-nowcoder.mjs    牛客用户比赛数据同步
-scripts/validate-data.mjs    JSON 校验
-tests/score.spec.ts          评分测试
-```
-
-## 页面和权限
-
-- `/`：公开排行榜和学生展示。
-- `/admin-access`：管理台密码入口。
-- `/admin`：管理台，未解锁时跳转到 `/admin-access`。
-
-环境变量见 `.env.example`：
-
-```env
-VITE_ADMIN_PASSWORD=acm2026
-VITE_GITHUB_OWNER=Bhu-Acm
-VITE_GITHUB_REPO=acm-grade2
-VITE_GITHUB_BRANCH=main
-```
-
-管理台密码状态只保存在当前浏览器的 `sessionStorage`。这是纯静态前端门禁，不是真正的身份认证；不要将高权限 GitHub Token 写入代码或发布包。
-
-## 数据与评分
-
-数据文件：
-
-```text
-src/data/students.json
-src/data/periods.json
-src/data/rules.json
-src/data/attendance.json
-src/data/nowcoder.json
-src/data/codeforces.json
-```
-
-当前 `src/data/rules.json` 的实际权重是：
-
-```text
-出勤       10%
-牛客竞赛   30%
-Codeforces 60%
-```
-
-牛客聚合方式当前为 `AVERAGE`。权重总和必须等于 `1`，管理台会阻止非法权重保存。
-
-注意：`README.md` 前面的旧说明仍写着 `20% / 40% / 40%`，与 `rules.json` 不一致。后续应以 `rules.json` 为准并修正 README。
-
-评分使用：
-
-```ts
-import { loadScoreboard, getStudentScore } from './src/domain/scoreboard';
-
-const rows = loadScoreboard();
-const row = getStudentScore('stu-001');
-```
-
-## 管理台工作流
-
-管理台修改先写入浏览器 `localStorage`，不会自动写入 GitHub。
-
-支持：
-
-- 学生新增和编辑。
-- 保存 Codeforces Handle、牛客 Handle、牛客用户 ID。
-- 当前周期牛客成绩手工新增、编辑、删除。
-- 评分权重修改。
-- JSON 导入和导出。
-- Codeforces 前端低频同步到本地草稿。
-- 使用 GitHub Token 从仓库获取数据或提交本地草稿。
-
-推荐流程：
-
-1. 先点击“从 GitHub 获取数据”，避免覆盖远端最新修改。
-2. 在管理台编辑数据。
-3. 检查排行榜和导出的 JSON。
-4. 填写 GitHub Token 与提交说明。
-5. 点击“提交更改到 GitHub”。
-6. 重新打开公开区确认结果。
-
-GitHub 同步会更新六个 JSON 文件，每个文件单独调用 Contents API 提交，不是单次原子提交。中途失败时先重新从 GitHub 获取数据，再继续。
-
-## 牛客同步脚本
-
-用户页面格式：
-
-```text
-https://ac.nowcoder.com/acm/contest/profile/{id}
-```
-
-实际接口：
-
-```text
-https://ac.nowcoder.com/acm-heavy/acm/contest/profile/contest-joined-history
-```
-
-基本用法：
-
-```bash
+npm run sync:codeforces -- --studentId stu-001 --handle tourist --periodId period-2026-spring
 npm run sync:nowcoder -- --nowcoderId 347041329 --studentId stu-001 --periodId period-2026-spring
 ```
 
-只测试接口、不写文件：
+## 排障建议
+
+- 如果第二次同步 CF 仍出现异常慢或累计题数异常，先检查旧记录是否带有 `solvedHistory`、`contestHistory`、`fetchedAt`；缺字段会自动回退到一次全量同步。
+- 如果排行榜里 CF 各难度过题数看起来偏小，先确认是否有 `UNRATED`；无 rating 的题现在统一放到该桶。
+- 如果管理台的一键同步按钮不可用，先确认当前是否通过 `npm run dev` 启动，而不是打开生产构建。
+
+## 推送前建议检查
 
 ```bash
-npm run sync:nowcoder -- --nowcoderId 347041329 --studentId stu-001 --max-pages 1 --dry-run
-```
-
-常用参数：
-
-```bash
---rating-only                  只抓 Rating 比赛
---from 2026-01-01              起始日期
---to 2026-08-30                 结束日期
---page-size 100                 每页数量
---max-pages 2                   最大页数
---output path/to/file.json      自定义输出文件
-```
-
-接口数据映射：`contestId`、`contestName`、`startTime`、`userCount/signUpCnt`、`rank`、`acceptedCount`、`totalScore`、`rating`、`changeValue`。其中 `totalScore` 保存为 `platformScore`，系统按排名换算的百分制分数保存为 `contestScore`。
-
-合并优先级：
-
-```text
-MANUAL / isManualOverride > IMPORT > SCRIPT > 其他
-```
-
-自动抓取不会覆盖人工校正数据。脚本默认写入 `src/data/nowcoder.json`，正式提交前必须检查 diff 并运行校验、测试、构建。
-
-截至本交接时间，真实接口测试账号 `347041329` 的 dry-run 结果为：抓取 1 页、74 条记录，未修改数据文件。
-
-## Codeforces 同步
-
-```bash
-npm run sync:codeforces -- --studentId stu-001 --handle tourist --periodId period-2026-spring
-```
-
-脚本调用官方 `user.info`、`user.status`、`user.rating`，生成或替换对应学生和周期的 Codeforces 快照。管理台也有低频同步入口。
-
-## 部署
-
-宝塔部署：
-
-```bash
+npm run validate:data
+npm test
 npm run build
 ```
 
-将 `dist/` 内全部文件上传到网站根目录。Nginx 需要把未知路径回退到 `index.html`，仓库中的 `nginx.conf` 已包含 `try_files` 配置。
+## 后续部署建议
 
-仓库同时提供：
+面向 `mms0420.cn:789` 的静态部署建议：
 
-- `Dockerfile`
-- `docker-compose.yml`
-- `nginx.conf`
+1. 本地执行 `npm run build`
+2. 将 `dist/` 挂载到服务器静态目录
+3. 确认服务器直接以静态资源方式提供 `index.html` 和 `assets/*`
 
-Docker 本地启动：
-
-```bash
-docker compose up --build
-```
-
-默认访问 `http://localhost:8080`。
-
-## 已验证结果
-
-2026-08-30 已通过：
-
-```text
-npm run validate:data  -> data ok: 8 students, 1 periods, 1 rules
-npm run test           -> 4 tests passed
-npm run build          -> Vue production build passed
-```
-
-## 已知问题
-
-- README 旧权重说明需要修正为当前 `10% / 30% / 60%`。
-- 部分历史文件在错误的 PowerShell 编码设置下会显示乱码；修改中文时确认文件仍是 UTF-8，避免批量重写历史内容。
-- 管理台密码不提供真正安全认证。
-- GitHub 当前每个数据文件单独提交，后续如需原子更新应改用后端代理或 GitHub Actions。
-- 牛客接口是网页内部接口，字段或访问策略可能变化；接口失败时保留手工录入，不要让公开展示依赖实时爬取。
-- 牛客脚本是命令行同步工具，不是前端实时爬虫。
-
-## 新对话开场模板
-
-```text
-请先读取仓库根目录 HANDOFF.md。当前项目是 acm-grade2。
-先检查 git status 和当前分支，再处理以下需求：<具体需求>。
-不要覆盖远端已有数据提交，修改后运行 validate:data、test 和 build。
-```
+当前 `vite.config.ts` 使用 `base: './'`，适合目录挂载方式部署。

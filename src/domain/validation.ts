@@ -12,6 +12,8 @@ export type DataSetKey = 'students' | 'periods' | 'rules' | 'attendance' | 'nowc
 
 const unique = (values: string[]) => values.length === new Set(values).size;
 const isArray = (value: unknown): value is unknown[] => Array.isArray(value);
+const hasKeys = (value: Record<string, unknown>, keys: string[]) =>
+  keys.every((key) => value[key] !== undefined);
 
 export function validateDataSet(
   key: DataSetKey,
@@ -35,18 +37,40 @@ export function validateDataSet(
 
   if (key === 'rules') {
     const records = items as unknown as ScoringRule[];
-    if (records.some((item) => !item.id || !item.version || !item.weights)) {
-      return ['规则数据必须包含 id、version 和 weights'];
+    if (
+      records.some(
+        (item) =>
+          !item.id ||
+          !item.version ||
+          !item.weights ||
+          !item.attendance ||
+          !item.nowcoder ||
+          !item.codeforces ||
+          !item.participation ||
+          !hasKeys(item.weights as unknown as Record<string, unknown>, [
+            'attendance',
+            'nowcoderRating',
+            'nowcoderPerformance',
+            'codeforcesRating',
+            'codeforcesSolved',
+            'codeforcesDifficulty',
+            'codeforcesContestPerformance',
+            'participation'
+          ])
+      )
+    ) {
+      return ['规则数据缺少新的方案 4 字段'];
     }
     if (
       records.some(
         (item) =>
-          Math.abs(
-            item.weights.attendance + item.weights.nowcoder + item.weights.codeforces - 1
-          ) > 0.000001
+          Object.values(item.weights).some(
+            (weight) => typeof weight !== 'number' || !Number.isFinite(weight) || weight < 0
+          ) ||
+          Object.values(item.weights).reduce((sum, weight) => sum + weight, 0) <= 0
       )
     ) {
-      return ['每个规则版本的权重总和必须等于 1'];
+      return ['规则权重必须是非负数字，且总和必须大于 0'];
     }
     if (records.some((item) => !['DRAFT', 'PUBLISHED', 'ARCHIVED'].includes(item.status as RuleStatus))) {
       return ['规则状态必须是 DRAFT、PUBLISHED 或 ARCHIVED'];

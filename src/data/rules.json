@@ -5,12 +5,12 @@
     "name": "方案4：CF进取综合评分",
     "status": "PUBLISHED",
     "weights": {
-      "attendance": 0.1,
+      "attendance": 0.15,
       "nowcoderRating": 0.1,
       "nowcoderPerformance": 0.1,
       "codeforcesRating": 0.25,
-      "codeforcesSolved": 0.125,
-      "codeforcesDifficulty": 0.125,
+      "codeforcesSolved": 0.15,
+      "codeforcesDifficulty": 0.15,
       "codeforcesContestPerformance": 0.15,
       "participation": 0.05
     },

@@ -8,7 +8,6 @@ import type {
   NowcoderConfig,
   NowcoderContestScore,
   ScoreBreakdown,
-  ScoreDetails,
   ScoreResult,
   ScoringRule
 } from '../types';
@@ -17,16 +16,13 @@ export function calculateAttendanceScore(
   record: AttendanceRecord | undefined,
   config: AttendanceConfig
 ): { score: number; rate: number } | null {
+  void config;
   if (!record) return null;
-  if (record.requiredCount === 0) {
-    return { score: round2(config.zeroRequiredScore), rate: 100 };
-  }
+  if (record.requiredCount === 0) return { score: 100, rate: 100 };
 
   const rate = ((record.presentCount + record.lateCount) / record.requiredCount) * 100;
-  const score = clamp(
-    rate - record.lateCount * config.lateDeduction - record.absentCount * config.absentDeduction
-  );
-  return { score: round2(score), rate: round2(rate) };
+  const normalizedRate = round2(clamp(rate));
+  return { score: normalizedRate, rate: normalizedRate };
 }
 
 export function calculateNowcoderContestScore(contest: NowcoderContestScore): number {
@@ -39,8 +35,9 @@ export function calculateNowcoderContestScore(contest: NowcoderContestScore): nu
 export function calculateNowcoderScore(
   records: NowcoderContestScore[],
   config: NowcoderConfig
-): { score: number; contestScores: number[] } | null {
+): { score: number; contestScores: number[]; ratingScore: number | null; rating?: number } | null {
   if (!records.length) return null;
+
   const ordered = [...records].sort((a, b) => b.contestDate.localeCompare(a.contestDate));
   const selected =
     config.aggregation === 'BEST'
@@ -49,12 +46,33 @@ export function calculateNowcoderScore(
         ? ordered.slice(0, Math.max(1, config.recentN))
         : ordered;
   const contestScores = selected.map(calculateNowcoderContestScore);
-
   const score =
     config.aggregation === 'BEST'
       ? Math.max(...contestScores)
       : contestScores.reduce((sum, value) => sum + value, 0) / contestScores.length;
-  return { score: round2(score), contestScores };
+
+  const latestRatedContest = ordered.find(
+    (contest) =>
+      typeof contest.rating === 'number' &&
+      Number.isFinite(contest.rating) &&
+      contest.rating > 0
+  );
+  const ratingScore =
+    latestRatedContest === undefined
+      ? null
+      : round2(
+          clamp(
+            50 +
+              (latestRatedContest.rating! - config.ratingBaseline) / config.ratingDivisor
+          )
+        );
+
+  return {
+    score: round2(score),
+    contestScores,
+    ratingScore,
+    rating: latestRatedContest?.rating
+  };
 }
 
 function difficultyCoefficient(rating: number, config: CodeforcesConfig): number {
@@ -67,23 +85,57 @@ function difficultyCoefficient(rating: number, config: CodeforcesConfig): number
 export function calculateCodeforcesScore(
   record: CodeforcesRecord | undefined,
   config: CodeforcesConfig
-): { score: number; quantityScore: number; difficultyScore: number } | null {
+): {
+  ratingScore: number | null;
+  quantityScore: number;
+  difficultyScore: number;
+  contestPerformanceScore: number | null;
+} | null {
   if (!record) return null;
-  const quantityScore = clamp((record.totalSolved / config.targetProblems) * 100);
+
+  const quantityScore = clamp(
+    (100 * Math.log1p(Math.max(0, record.totalSolved))) / Math.log1p(config.targetProblems)
+  );
   const weightedSolved = Object.entries(record.difficultyStats).reduce(
-    (sum, [rating, count]) => sum + Number(count) * difficultyCoefficient(Number(rating), config),
+    (sum, [rating, count]) =>
+      sum + Number(count) * difficultyCoefficient(Number(rating), config),
     0
   );
   const difficultyScore = clamp(
     (weightedSolved / config.targetDifficultyProblems) * 100
   );
-  const score =
-    quantityScore * config.quantityWeight + difficultyScore * config.difficultyWeight;
+  const ratingScore =
+    typeof record.rating !== 'number' || !Number.isFinite(record.rating)
+      ? null
+      : round2(clamp(50 + (record.rating - config.ratingBaseline) / config.ratingDivisor));
+
+  const percentiles = (record.contestRankPercentiles ?? []).filter((value) =>
+    Number.isFinite(value)
+  );
+  const contestPerformanceScore = percentiles.length
+    ? round2(clamp(percentiles.reduce((sum, value) => sum + value, 0) / percentiles.length))
+    : null;
 
   return {
-    score: round2(score),
+    ratingScore,
     quantityScore: round2(quantityScore),
-    difficultyScore: round2(difficultyScore)
+    difficultyScore: round2(difficultyScore),
+    contestPerformanceScore
+  };
+}
+
+export function calculateParticipationScore(
+  nowcoderContestCount: number,
+  codeforcesContestCount: number,
+  targetContests: number
+): { score: number; contestCount: number } | null {
+  const contestCount =
+    Math.max(0, nowcoderContestCount) + Math.max(0, codeforcesContestCount);
+  if (contestCount === 0) return null;
+
+  return {
+    contestCount,
+    score: round2(clamp((contestCount / targetContests) * 100))
   };
 }
 
@@ -107,29 +159,49 @@ export function calculateStudentScore(
   const attendanceResult = calculateAttendanceScore(attendance, rule.attendance);
   const nowcoderResult = calculateNowcoderScore(nowcoder, rule.nowcoder);
   const codeforcesResult = calculateCodeforcesScore(codeforces, rule.codeforces);
+  const participationResult = calculateParticipationScore(
+    nowcoder.length,
+    codeforces?.contestCount ?? 0,
+    rule.participation.targetContests
+  );
 
   const breakdown: ScoreBreakdown = {
     attendance:
       attendanceResult?.score ??
       missingValue('attendance', rule.missingDataPolicy, missing),
-    nowcoder:
+    nowcoderRating:
+      nowcoderResult?.ratingScore ??
+      missingValue('nowcoderRating', rule.missingDataPolicy, missing),
+    nowcoderPerformance:
       nowcoderResult?.score ??
-      missingValue('nowcoder', rule.missingDataPolicy, missing),
-    codeforces:
-      codeforcesResult?.score ??
-      missingValue('codeforces', rule.missingDataPolicy, missing)
+      missingValue('nowcoderPerformance', rule.missingDataPolicy, missing),
+    codeforcesRating:
+      codeforcesResult?.ratingScore ??
+      missingValue('codeforcesRating', rule.missingDataPolicy, missing),
+    codeforcesSolved:
+      codeforcesResult?.quantityScore ??
+      missingValue('codeforcesSolved', rule.missingDataPolicy, missing),
+    codeforcesDifficulty:
+      codeforcesResult?.difficultyScore ??
+      missingValue('codeforcesDifficulty', rule.missingDataPolicy, missing),
+    codeforcesContestPerformance:
+      codeforcesResult?.contestPerformanceScore ??
+      missingValue('codeforcesContestPerformance', rule.missingDataPolicy, missing),
+    participation:
+      participationResult?.score ??
+      missingValue('participation', rule.missingDataPolicy, missing)
   };
 
-  const totalScore =
-    breakdown.attendance === null ||
-    breakdown.nowcoder === null ||
-    breakdown.codeforces === null
-      ? null
-      : round2(
-          breakdown.attendance * rule.weights.attendance +
-            breakdown.nowcoder * rule.weights.nowcoder +
-            breakdown.codeforces * rule.weights.codeforces
-        );
+  const totalWeight = Object.values(rule.weights).reduce((sum, value) => sum + value, 0);
+  const hasNull = Object.values(breakdown).some((value) => value === null);
+  const totalScore = hasNull
+    ? null
+    : round2(
+        (Object.entries(breakdown) as Array<[keyof ScoreBreakdown, number]>).reduce(
+          (sum, [key, value]) => sum + value * rule.weights[key],
+          0
+        ) / totalWeight
+      );
 
   return {
     studentId,
@@ -140,8 +212,14 @@ export function calculateStudentScore(
     details: {
       attendanceRate: attendanceResult?.rate,
       nowcoderContestScores: nowcoderResult?.contestScores,
+      nowcoderRating: nowcoderResult?.rating,
+      codeforcesRating: codeforces?.rating,
       codeforcesQuantityScore: codeforcesResult?.quantityScore,
       codeforcesDifficultyScore: codeforcesResult?.difficultyScore,
+      codeforcesContestPerformanceScore:
+        codeforcesResult?.contestPerformanceScore ?? undefined,
+      participationCount: participationResult?.contestCount,
+      participationScore: participationResult?.score,
       missing
     }
   };

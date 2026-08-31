@@ -2,85 +2,82 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+import {
+  canUseCodeforcesIncrementalSync,
+  fetchCodeforcesData,
+  normalizeCodeforcesRecord,
+  pickCodeforcesRecord
+} from './lib/codeforces-sync.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dataPath = path.join(root, 'src', 'data', 'codeforces.json');
-const API_DELAY_MS = 2100;
+const periodsPath = path.join(root, 'src', 'data', 'periods.json');
 
 function argument(name, fallback) {
   const index = process.argv.indexOf(`--${name}`);
   return index === -1 ? fallback : process.argv[index + 1];
 }
 
-function wait(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-async function requestJson(url) {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Codeforces HTTP ${response.status}`);
-  const payload = await response.json();
-  if (payload.status !== 'OK') throw new Error(payload.comment || 'Codeforces API 返回失败');
-  return payload.result;
-}
-
-const studentId = argument('studentId');
-const handle = argument('handle');
-const periodId = argument('periodId', 'period-2026-spring');
-
-if (!studentId || !handle) {
-  console.error(
-    '用法: node scripts/sync-codeforces.mjs --studentId stu-001 --handle tourist [--periodId period-2026-spring]'
-  );
-  process.exit(1);
-}
-
-const base = 'https://codeforces.com/api';
-const encodedHandle = encodeURIComponent(handle);
-const user = (await requestJson(`${base}/user.info?handles=${encodedHandle}`))[0];
-await wait(API_DELAY_MS);
-const submissions = await requestJson(
-  `${base}/user.status?handle=${encodedHandle}&from=1&count=10000`
-);
-await wait(API_DELAY_MS);
-const ratingHistory = await requestJson(`${base}/user.rating?handle=${encodedHandle}`);
-
-const solved = new Set();
-const difficultyStats = {};
-for (const submission of submissions) {
-  if (submission.verdict !== 'OK') continue;
-  const problem = submission.problem ?? {};
-  const key = `${problem.contestId ?? 'gym'}:${problem.index ?? 'unknown'}`;
-  if (solved.has(key)) continue;
-  solved.add(key);
-  if (problem.rating !== undefined) {
-    const rating = String(problem.rating);
-    difficultyStats[rating] = (difficultyStats[rating] ?? 0) + 1;
+function requiredArgument(name) {
+  const value = argument(name);
+  if (!value) {
+    throw new Error(`缺少参数 --${name}`);
   }
+  return value;
 }
 
-const records = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
-const nextRecord = {
-  id: `cf-${studentId}`,
+const studentId = requiredArgument('studentId');
+const handle = requiredArgument('handle');
+const periodId = argument('periodId', 'period-2026-spring');
+const outputPath = path.resolve(root, argument('output', path.relative(root, dataPath)));
+const today = new Date().toISOString().slice(0, 10);
+
+const records = fs.existsSync(outputPath) ? JSON.parse(fs.readFileSync(outputPath, 'utf8')) : [];
+const periods = fs.existsSync(periodsPath) ? JSON.parse(fs.readFileSync(periodsPath, 'utf8')) : [];
+const period = periods.find((item) => item.id === periodId) ?? {
+  id: periodId,
+  startDate: '1970-01-01',
+  endDate: today
+};
+const percentileToDate = today < period.endDate ? today : period.endDate;
+const previousRecord = pickCodeforcesRecord(
+  records,
   periodId,
   studentId,
-  handle: user.handle,
-  totalSolved: solved.size,
-  difficultyStats,
-  rating: user.rating,
-  maxRating: user.maxRating,
-  contestCount: ratingHistory.length,
-  source: 'API',
-  fetchedAt: new Date().toISOString(),
-  isManualOverride: false
-};
-
+  handle
+);
+const useIncremental = canUseCodeforcesIncrementalSync(previousRecord, handle);
+const payload = await fetchCodeforcesData(handle, {
+  submissionSinceTime: useIncremental ? previousRecord?.fetchedAt : undefined,
+  percentileFromDate: useIncremental
+    ? (previousRecord?.fetchedAt?.slice(0, 10) ?? period.startDate) >= period.startDate
+      ? previousRecord?.fetchedAt?.slice(0, 10) ?? period.startDate
+      : period.startDate
+    : period.startDate,
+  percentileToDate,
+  cachedContestHistory: useIncremental ? previousRecord?.contestHistory : undefined
+});
+const nextRecord = normalizeCodeforcesRecord(periodId, studentId, payload, previousRecord);
 const nextRecords = records.filter(
   (record) => !(record.periodId === periodId && record.studentId === studentId)
 );
+
 nextRecords.push(nextRecord);
-nextRecords.sort((a, b) => a.studentId.localeCompare(b.studentId));
-fs.writeFileSync(dataPath, `${JSON.stringify(nextRecords, null, 2)}\n`, 'utf8');
+nextRecords.sort((left, right) => left.studentId.localeCompare(right.studentId));
+fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+fs.writeFileSync(outputPath, `${JSON.stringify(nextRecords, null, 2)}\n`, 'utf8');
 console.log(
-  `saved ${user.handle}: ${solved.size} solved, ${ratingHistory.length} contests -> ${path.relative(root, dataPath)}`
+  JSON.stringify(
+    {
+      studentId,
+      handle: nextRecord.handle,
+      incrementalSince: previousRecord?.fetchedAt ?? null,
+      totalSolved: nextRecord.totalSolved,
+      contestCount: nextRecord.contestCount,
+      contestPercentiles: nextRecord.contestRankPercentiles?.length ?? 0,
+      output: path.relative(root, outputPath)
+    },
+    null,
+    2
+  )
 );

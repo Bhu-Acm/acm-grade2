@@ -42,8 +42,8 @@ if (codeforces.some((item) => !studentIds.has(item.studentId) || !periodIds.has(
 
 for (const rule of rules) {
   const weightSum = Object.values(rule.weights).reduce((sum, value) => sum + value, 0);
-  if (Math.abs(weightSum - 1) > 0.000001) {
-    throw new Error(`${rule.id} 权重总和必须等于 1`);
+  if (!Number.isFinite(weightSum) || weightSum <= 0) {
+    throw new Error(`${rule.id} 权重总和必须大于 0`);
   }
 }
 

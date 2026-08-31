@@ -1,5 +1,5 @@
 import type { AppData } from '../data/store';
-import type { DataSetKey } from '../domain/validation';
+import { validateAppData, type DataSetKey } from '../domain/validation';
 
 const DATA_KEYS: DataSetKey[] = [
   'students',
@@ -27,9 +27,34 @@ export interface GithubSyncResult {
 }
 
 interface GithubContentResponse {
-  content?: string;
+  content: string;
   sha: string;
-  encoding?: string;
+  encoding: string;
+  message?: string;
+}
+
+interface GithubRefResponse {
+  object: {
+    sha: string;
+  };
+  message?: string;
+}
+
+interface GithubCommitResponse {
+  sha: string;
+  tree: {
+    sha: string;
+  };
+  message?: string;
+}
+
+interface GithubBlobResponse {
+  sha: string;
+  message?: string;
+}
+
+interface GithubTreeResponse {
+  sha: string;
   message?: string;
 }
 
@@ -39,56 +64,57 @@ function repositoryPath(key: DataSetKey): string {
   return `src/data/${key}.json`;
 }
 
-function rawUrl(key: DataSetKey): string {
-  return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${repositoryPath(key)}?t=${Date.now()}`;
-}
-
 function decodeBase64(value: string): string {
   const binary = atob(value.replace(/\n/g, ''));
   const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
   return new TextDecoder().decode(bytes);
 }
 
-function encodeBase64(value: string): string {
-  const bytes = new TextEncoder().encode(value);
-  let binary = '';
-  bytes.forEach((byte) => {
-    binary += String.fromCharCode(byte);
-  });
-  return btoa(binary);
-}
-
 async function githubRequest<T>(url: string, token?: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
   headers.set('Accept', 'application/vnd.github+json');
   headers.set('X-GitHub-Api-Version', '2022-11-28');
-  if (token) headers.set('Authorization', `Bearer ${token}`);
+  if (token?.trim()) headers.set('Authorization', `Bearer ${token.trim()}`);
+
   const response = await fetch(url, { ...init, headers });
   const payload = (await response.json().catch(() => ({}))) as T & { message?: string };
   if (!response.ok) throw new Error(payload.message || `GitHub HTTP ${response.status}`);
   return payload;
 }
 
-export async function fetchGithubData(): Promise<Partial<AppData>> {
-  const entries = await Promise.all(
-    DATA_KEYS.map(async (key) => {
-      const response = await fetch(rawUrl(key), { cache: 'no-store' });
-      if (!response.ok) throw new Error(`读取 ${key}.json 失败：HTTP ${response.status}`);
-      return [key, JSON.parse(await response.text())] as const;
-    })
-  );
-  return Object.fromEntries(entries) as Partial<AppData>;
+async function fetchGithubFile(key: DataSetKey, token?: string): Promise<unknown> {
+  const url = `${API_BASE}/repos/${owner}/${repo}/contents/${repositoryPath(key)}?ref=${encodeURIComponent(branch)}`;
+  const payload = await githubRequest<GithubContentResponse>(url, token);
+  if (payload.encoding !== 'base64') {
+    throw new Error(`读取 ${key}.json 失败：GitHub 返回了未知编码 ${payload.encoding}`);
+  }
+  return JSON.parse(decodeBase64(payload.content));
 }
 
-async function getFileSha(key: DataSetKey, token: string): Promise<string | undefined> {
-  const url = `${API_BASE}/repos/${owner}/${repo}/contents/${repositoryPath(key)}?ref=${encodeURIComponent(branch)}`;
-  try {
-    const payload = await githubRequest<GithubContentResponse>(url, token);
-    return payload.sha;
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('Not Found')) return undefined;
-    throw error;
+export async function fetchGithubData(token?: string): Promise<AppData> {
+  const entries = await Promise.all(
+    DATA_KEYS.map(async (key) => [key, await fetchGithubFile(key, token)] as const)
+  );
+  const data = Object.fromEntries(entries) as unknown as AppData;
+  const errors = validateAppData(data);
+  if (errors.length) {
+    throw new Error(`GitHub 远端数据校验失败：${errors[0]}`);
   }
+  return data;
+}
+
+async function getBranchHead(token: string): Promise<GithubRefResponse> {
+  return githubRequest<GithubRefResponse>(
+    `${API_BASE}/repos/${owner}/${repo}/git/ref/heads/${encodeURIComponent(branch)}`,
+    token
+  );
+}
+
+async function getCommit(sha: string, token: string): Promise<GithubCommitResponse> {
+  return githubRequest<GithubCommitResponse>(
+    `${API_BASE}/repos/${owner}/${repo}/git/commits/${sha}`,
+    token
+  );
 }
 
 export async function commitGithubData(
@@ -99,23 +125,77 @@ export async function commitGithubData(
   if (!token.trim()) throw new Error('请填写 GitHub Token');
   if (!message.trim()) throw new Error('请填写提交说明');
 
-  const results: GithubSyncResult[] = [];
-  for (const key of DATA_KEYS) {
-    const path = repositoryPath(key);
-    const sha = await getFileSha(key, token);
-    const url = `${API_BASE}/repos/${owner}/${repo}/contents/${path}`;
-    const payload = await githubRequest<GithubContentResponse>(url, token, {
-      method: 'PUT',
+  const errors = validateAppData(data);
+  if (errors.length) throw new Error(`本地草稿校验失败：${errors[0]}`);
+
+  const head = await getBranchHead(token);
+  const currentCommit = await getCommit(head.object.sha, token);
+
+  const blobs = await Promise.all(
+    DATA_KEYS.map(async (key) => {
+      const payload = await githubRequest<GithubBlobResponse>(
+        `${API_BASE}/repos/${owner}/${repo}/git/blobs`,
+        token,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            content: `${JSON.stringify(data[key], null, 2)}\n`,
+            encoding: 'utf-8'
+          })
+        }
+      );
+
+      return {
+        key,
+        path: repositoryPath(key),
+        sha: payload.sha
+      };
+    })
+  );
+
+  const nextTree = await githubRequest<GithubTreeResponse>(
+    `${API_BASE}/repos/${owner}/${repo}/git/trees`,
+    token,
+    {
+      method: 'POST',
       body: JSON.stringify({
-        message: `${message} (${key}.json)`,
-        content: encodeBase64(`${JSON.stringify(data[key], null, 2)}\n`),
-        branch,
-        ...(sha ? { sha } : {})
+        base_tree: currentCommit.tree.sha,
+        tree: blobs.map((item) => ({
+          path: item.path,
+          mode: '100644',
+          type: 'blob',
+          sha: item.sha
+        }))
       })
-    });
-    results.push({ key, path, sha: payload.content?.length ? payload.sha : sha || '' });
-  }
-  return results;
+    }
+  );
+
+  const nextCommit = await githubRequest<GithubCommitResponse>(
+    `${API_BASE}/repos/${owner}/${repo}/git/commits`,
+    token,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        message,
+        tree: nextTree.sha,
+        parents: [head.object.sha]
+      })
+    }
+  );
+
+  await githubRequest(
+    `${API_BASE}/repos/${owner}/${repo}/git/refs/heads/${encodeURIComponent(branch)}`,
+    token,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({
+        sha: nextCommit.sha,
+        force: false
+      })
+    }
+  );
+
+  return blobs;
 }
 
 export function maskToken(token: string): string {

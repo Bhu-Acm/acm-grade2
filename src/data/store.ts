@@ -101,6 +101,14 @@ export function upsertStudent(student: Student) {
   persist();
 }
 
+export function removeStudent(studentId: string) {
+  state.students = state.students.filter((item) => item.id !== studentId) as never;
+  state.attendance = state.attendance.filter((item) => item.studentId !== studentId) as never;
+  state.nowcoder = state.nowcoder.filter((item) => item.studentId !== studentId) as never;
+  state.codeforces = state.codeforces.filter((item) => item.studentId !== studentId) as never;
+  persist();
+}
+
 export function updateRuleWeights(weights: ScoringRule['weights']) {
   const active = getRule(getActivePeriod().ruleVersionId);
   const index = state.rules.findIndex((rule) => rule.id === active.id);
@@ -109,11 +117,25 @@ export function updateRuleWeights(weights: ScoringRule['weights']) {
 }
 
 export function upsertCodeforcesRecord(record: CodeforcesRecord) {
-  const index = state.codeforces.findIndex(
+  const filtered = state.codeforces.filter(
+    (item) => !(item.periodId === record.periodId && item.studentId === record.studentId)
+  );
+  filtered.push(clone(record));
+  state.codeforces = filtered as never;
+  persist();
+}
+
+export function upsertAttendanceRecord(record: AttendanceRecord) {
+  const index = state.attendance.findIndex(
     (item) => item.periodId === record.periodId && item.studentId === record.studentId
   );
-  if (index === -1) state.codeforces.push(clone(record));
-  else state.codeforces[index] = clone(record);
+  if (index === -1) state.attendance.push(clone(record));
+  else state.attendance[index] = clone(record);
+  persist();
+}
+
+export function removeAttendanceRecord(id: string) {
+  state.attendance = state.attendance.filter((item) => item.id !== id) as never;
   persist();
 }
 

@@ -12,7 +12,6 @@ export interface Student {
   className: string;
   grade: number;
   codeforcesHandle?: string;
-  nowcoderHandle?: string;
   nowcoderUserId?: string;
   status: 'ACTIVE' | 'INACTIVE';
 }
@@ -28,8 +27,13 @@ export interface ExamPeriod {
 
 export interface ScoreWeights {
   attendance: number;
-  nowcoder: number;
-  codeforces: number;
+  nowcoderRating: number;
+  nowcoderPerformance: number;
+  codeforcesRating: number;
+  codeforcesSolved: number;
+  codeforcesDifficulty: number;
+  codeforcesContestPerformance: number;
+  participation: number;
 }
 
 export interface AttendanceConfig {
@@ -41,6 +45,12 @@ export interface AttendanceConfig {
 export interface NowcoderConfig {
   aggregation: NowcoderAggregation;
   recentN: number;
+  ratingBaseline: number;
+  ratingDivisor: number;
+}
+
+export interface ParticipationConfig {
+  targetContests: number;
 }
 
 export interface DifficultyBand {
@@ -52,8 +62,8 @@ export interface DifficultyBand {
 export interface CodeforcesConfig {
   targetProblems: number;
   targetDifficultyProblems: number;
-  quantityWeight: number;
-  difficultyWeight: number;
+  ratingBaseline: number;
+  ratingDivisor: number;
   difficultyBands: DifficultyBand[];
 }
 
@@ -72,6 +82,7 @@ export interface ScoringRule {
   attendance: AttendanceConfig;
   nowcoder: NowcoderConfig;
   codeforces: CodeforcesConfig;
+  participation: ParticipationConfig;
   levels: LevelBand[];
   missingDataPolicy: MissingDataPolicy;
   publishedAt: string;
@@ -115,6 +126,34 @@ export interface DifficultyStats {
   [rating: string]: number;
 }
 
+export interface CodeforcesSolvedProblem {
+  problemKey: string;
+  solvedAt: string;
+  contestId?: number;
+  index?: string;
+  rating?: number;
+}
+
+export interface CodeforcesContestHistoryItem {
+  contestId: number;
+  contestName?: string;
+  contestDate: string;
+  ratingUpdateTime?: string;
+  rank?: number;
+  oldRating?: number;
+  newRating?: number;
+  percentile?: number | null;
+}
+
+export interface CodeforcesSnapshot {
+  fetchedAt: string;
+  totalSolved: number;
+  difficultyStats: DifficultyStats;
+  rating?: number;
+  maxRating?: number;
+  contestCount: number;
+}
+
 export interface CodeforcesRecord {
   id: string;
   periodId: string;
@@ -125,6 +164,11 @@ export interface CodeforcesRecord {
   rating?: number;
   maxRating?: number;
   contestCount: number;
+  // Values are 0..100, where 100 means first place in a contest.
+  contestRankPercentiles?: number[];
+  solvedHistory?: CodeforcesSolvedProblem[];
+  contestHistory?: CodeforcesContestHistoryItem[];
+  snapshots?: CodeforcesSnapshot[];
   source: DataSource;
   fetchedAt: string;
   isManualOverride: boolean;
@@ -133,15 +177,25 @@ export interface CodeforcesRecord {
 
 export interface ScoreBreakdown {
   attendance: number | null;
-  nowcoder: number | null;
-  codeforces: number | null;
+  nowcoderRating: number | null;
+  nowcoderPerformance: number | null;
+  codeforcesRating: number | null;
+  codeforcesSolved: number | null;
+  codeforcesDifficulty: number | null;
+  codeforcesContestPerformance: number | null;
+  participation: number | null;
 }
 
 export interface ScoreDetails {
   attendanceRate?: number;
   nowcoderContestScores?: number[];
+  nowcoderRating?: number;
+  codeforcesRating?: number;
   codeforcesQuantityScore?: number;
   codeforcesDifficultyScore?: number;
+  codeforcesContestPerformanceScore?: number;
+  participationCount?: number;
+  participationScore?: number;
   missing: Array<keyof ScoreBreakdown>;
 }
 
