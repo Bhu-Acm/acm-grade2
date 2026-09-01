@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHashHistory } from 'vue-router';
 import HomeView from './pages/HomeView.vue';
 import AdminView from './pages/AdminView.vue';
 import AdminAccessView from './pages/AdminAccessView.vue';
@@ -6,7 +6,7 @@ import HelpView from './pages/HelpView.vue';
 import { isAdminUnlocked } from './adminAuth';
 
 export default createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   routes: [
     { path: '/', component: HomeView },
     { path: '/help', component: HelpView },
@@ -15,6 +15,7 @@ export default createRouter({
       path: '/admin',
       component: AdminView,
       beforeEnter: () => (isAdminUnlocked() ? true : '/admin-access')
-    }
+    },
+    { path: '/:pathMatch(.*)*', redirect: '/' }
   ]
 });

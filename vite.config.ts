@@ -3,6 +3,9 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { syncAllStudentsLocally } from './scripts/lib/local-sync.mjs';
 
+const repositoryName = process.env.GITHUB_REPOSITORY?.split('/')[1] || 'acm-grade2';
+const base = process.env.GITHUB_ACTIONS === 'true' ? `/${repositoryName}/` : '/';
+
 function readJsonBody(request: IncomingMessage) {
   return new Promise<any>((resolve, reject) => {
     let body = '';
@@ -55,5 +58,5 @@ export default defineConfig({
   define: {
     __PROJECT_ROOT__: JSON.stringify(process.cwd())
   },
-  base: './'
+  base
 });

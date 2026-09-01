@@ -7,23 +7,24 @@
 - 本地目录：`D:\acm lab\acm-grade\acm-grade2`
 - 当前分支：`main`
 - 远端仓库：`https://github.com/Bhu-Acm/acm-grade2`
-- 远端名称：`origin`
+- GitHub Pages 站点：`https://bhu-acm.github.io/acm-grade2/`
+- GitHub Pages 帮助页：`https://bhu-acm.github.io/acm-grade2/#/help`
 - 形态：Vue 静态前端，构建输出 `dist/`
 - 规划部署地址：`mms0420.cn:789`
-- 数据存储：GitHub 仓库中的 JSON
+- 数据存储：GitHub 仓库 JSON
 - 数据库：无
 
-## 已完成
+## 已完成模块
 
-- `/` 公开排行榜。
-- `/help` 帮助中心。
-- `/admin-access` 和 `/admin` 管理台。
-- 底部显示 GitHub 仓库地址。
-- 帮助问答数据和资料索引已加入 GitHub 同步链路。
+- `#/` 公开排行榜。
+- `#/help` 帮助中心。
+- `#/admin-access` 和 `#/admin` 管理台。
+- 页脚显示 GitHub 仓库地址。
+- 帮助帖子和资料索引已纳入 GitHub 同步链路。
 
-## 帮助内容
+## 帮助内容维护
 
-帮助问答：
+帮助帖子文件：
 
 ```text
 src/data/helpPosts.json
@@ -42,7 +43,7 @@ help/
 public/help/
 ```
 
-帮助内容低频变更，当前不建议增加管理台富文本编辑器。直接改 JSON 更适合 Git 审核、回滚和远端同步。
+如果要改帖子内容，直接在 GitHub 网页编辑 `src/data/helpPosts.json` 即可。当前不建议给管理台增加富文本帮助编辑器：帮助内容更新频率低，直接维护仓库文件更简单，也更适合 Git 审核、回滚和同步。
 
 ## 数据与同步
 
@@ -66,17 +67,18 @@ GitHub 配置来源：
 src/services/github.ts
 ```
 
-默认仓库地址已存入项目配置，可直接解析为：
-
-```text
-https://github.com/Bhu-Acm/acm-grade2
-```
-
 同步策略：
 
-- 拉取用 GitHub Contents API。
-- 提交用 Git Data API 的 `blob -> tree -> commit -> ref`。
-- 管理台导入导出也覆盖帮助 JSON。
+- 拉取使用 GitHub Contents API。
+- 提交使用 Git Data API 的 `blob -> tree -> commit -> ref`。
+- 管理台 JSON 导入导出也覆盖帮助文件。
+
+## 路由与部署注意事项
+
+- GitHub Pages 使用仓库子路径 `/acm-grade2/`。
+- 前端路由使用 hash 模式，避免 GitHub Pages 刷新时出现 404。
+- 帮助资料链接使用相对 `BASE_URL` 生成，适配本地开发和 GitHub Pages。
+- GitHub Actions 构建时，`vite.config.ts` 会根据 `GITHUB_REPOSITORY` 自动推导 `base`。
 
 ## 本地同步流程
 

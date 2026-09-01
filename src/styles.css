@@ -141,6 +141,15 @@ button, input { font: inherit; }
 .resource-card strong { margin-top: 20px; color: #e7f6f1; font-size: 16px; }
 .resource-card p { margin: 8px 0 16px; color: #72928b; font-size: 12px; line-height: 1.6; }
 .resource-link { margin-top: auto; color: #00e8b8; font: 11px 'IBM Plex Mono', monospace; }
+.help-maintenance-note {
+  margin: 16px 0 0;
+  padding: 14px 16px;
+  border-left: 2px solid #00e8b8;
+  background: #0b211e;
+  color: #86a8a0;
+  font-size: 12px;
+  line-height: 1.7;
+}
 
 .site-shell {
   min-height: 100vh;

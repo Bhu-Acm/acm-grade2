@@ -2,11 +2,11 @@
   <main class="help-shell">
     <header class="help-hero">
       <div>
-        <p class="eyebrow">FIELD MANUAL <span>// HELP</span></p>
-        <h1>先自己想，再来提问。</h1>
+        <p class="eyebrow">HELP CENTER <span>// ACM GRADE</span></p>
+        <h1>训练中常见的问题，这里先帮你理顺。</h1>
         <p class="hero-copy">
-          这里把注册、提问、排错、板子和训练复盘整理成一轮轮可以快速查阅的问答。
-          需要原始图文或完整代码时，再打开底部资料。
+          这里把注册、提问、排错、板子和复盘整理成分轮问答。先快速找到你所在的阶段，
+          再展开对应问题查看步骤和建议；需要原始资料时，可以直接打开下方附件。
         </p>
       </div>
       <div class="help-count">
@@ -31,7 +31,7 @@
         </button>
         <div class="help-index-note">
           <span class="live-dot"></span>
-          内容来自仓库 `src/data/helpPosts.json`
+          帖子直接维护在 GitHub 的 `src/data/helpPosts.json`
         </div>
       </aside>
 
@@ -81,7 +81,7 @@
           v-for="resource in resources"
           :key="resource.id"
           class="resource-card"
-          :href="resource.path"
+          :href="resource.href"
           target="_blank"
           rel="noreferrer"
         >
@@ -91,6 +91,10 @@
           <span class="resource-link">打开资料 &gt;</span>
         </a>
       </div>
+      <p class="help-maintenance-note">
+        如果要修改帮助帖子，直接在 GitHub 仓库编辑 `src/data/helpPosts.json`；如果要改资料入口，
+        编辑 `src/data/helpResources.json`。
+      </p>
     </section>
   </main>
 </template>
@@ -98,10 +102,16 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useDataStore } from '../data/store';
+import type { HelpResource } from '../types';
 
 const data = useDataStore();
 const posts = computed(() => [...data.helpPosts].sort((left, right) => left.round - right.round));
-const resources = computed(() => data.helpResources);
+const resources = computed(() =>
+  data.helpResources.map((resource) => ({
+    ...resource,
+    href: resolveResourceHref(resource)
+  }))
+);
 const roundOptions = computed(() => {
   const rounds = new Map<number, { value: number; label: string; count: number }>();
   posts.value.forEach((post) => {
@@ -122,5 +132,10 @@ function togglePost(id: string) {
   if (next.has(id)) next.delete(id);
   else next.add(id);
   expandedPosts.value = next;
+}
+
+function resolveResourceHref(resource: HelpResource) {
+  const base = new URL(import.meta.env.BASE_URL, window.location.origin);
+  return new URL(resource.path, base).toString();
 }
 </script>
