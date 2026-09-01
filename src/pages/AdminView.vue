@@ -408,6 +408,8 @@
             <option value="codeforces">codeforces.json</option>
             <option value="rules">rules.json</option>
             <option value="periods">periods.json</option>
+            <option value="helpPosts">helpPosts.json</option>
+            <option value="helpResources">helpResources.json</option>
           </select>
         </label>
         <input class="file-input" type="file" accept="application/json,.json" @change="importJson" />

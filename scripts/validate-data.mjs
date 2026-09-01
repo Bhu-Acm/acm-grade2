@@ -4,7 +4,16 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dataDir = path.join(root, 'src', 'data');
-const files = ['students.json', 'periods.json', 'rules.json', 'attendance.json', 'nowcoder.json', 'codeforces.json'];
+const files = [
+  'students.json',
+  'periods.json',
+  'rules.json',
+  'attendance.json',
+  'nowcoder.json',
+  'codeforces.json',
+  'helpPosts.json',
+  'helpResources.json'
+];
 
 for (const file of files) {
   const filePath = path.join(dataDir, file);
@@ -19,6 +28,8 @@ const rules = read('rules.json');
 const attendance = read('attendance.json');
 const nowcoder = read('nowcoder.json');
 const codeforces = read('codeforces.json');
+const helpPosts = read('helpPosts.json');
+const helpResources = read('helpResources.json');
 
 const studentIds = new Set(students.map((item) => item.id));
 const periodIds = new Set(periods.map((item) => item.id));
@@ -38,6 +49,12 @@ if (nowcoder.some((item) => !studentIds.has(item.studentId) || !periodIds.has(it
 }
 if (codeforces.some((item) => !studentIds.has(item.studentId) || !periodIds.has(item.periodId))) {
   throw new Error('codeforces.json 存在无效 studentId 或 periodId');
+}
+if (helpPosts.some((item) => !item.id || !item.round || !item.category || !item.question || !item.answer)) {
+  throw new Error('helpPosts.json 存在缺少 id、轮次、分类、问题或答案的记录');
+}
+if (helpResources.some((item) => !item.id || !item.title || !item.description || !item.path)) {
+  throw new Error('helpResources.json 存在缺少 id、标题、说明或路径的记录');
 }
 
 for (const rule of rules) {

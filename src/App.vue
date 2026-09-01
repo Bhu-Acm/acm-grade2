@@ -10,13 +10,23 @@
       </RouterLink>
       <nav class="topnav">
         <RouterLink to="/">排行榜</RouterLink>
+        <RouterLink to="/help">帮助</RouterLink>
         <RouterLink to="/admin">管理台</RouterLink>
       </nav>
     </header>
     <RouterView />
+    <footer class="site-footer">
+      <span>ACM GRADE 2 / 数据与帮助内容由 GitHub 仓库维护</span>
+      <a :href="githubRepositoryUrl" target="_blank" rel="noreferrer">
+        github.com/{{ githubConfig.owner }}/{{ githubConfig.repo }} &gt;
+      </a>
+    </footer>
   </div>
 </template>
 
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router';
+import { githubConfig } from './services/github';
+
+const githubRepositoryUrl = `https://github.com/${githubConfig.owner}/${githubConfig.repo}`;
 </script>

@@ -5,6 +5,8 @@ export type MissingDataPolicy = 'ZERO' | 'BLOCK';
 export type NowcoderAggregation = 'AVERAGE' | 'BEST' | 'RECENT_N';
 export type ScoreStatus = 'COMPLETE' | 'INCOMPLETE' | 'BLOCKED';
 
+export * from './help';
+
 export interface Student {
   id: string;
   studentNo: string;

@@ -8,7 +8,15 @@ import type {
   Student
 } from '../types';
 
-export type DataSetKey = 'students' | 'periods' | 'rules' | 'attendance' | 'nowcoder' | 'codeforces';
+export type DataSetKey =
+  | 'students'
+  | 'periods'
+  | 'rules'
+  | 'attendance'
+  | 'nowcoder'
+  | 'codeforces'
+  | 'helpPosts'
+  | 'helpResources';
 
 const unique = (values: string[]) => values.length === new Set(values).size;
 const isArray = (value: unknown): value is unknown[] => Array.isArray(value);
@@ -77,6 +85,18 @@ export function validateDataSet(
     }
   }
 
+  if (key === 'helpPosts') {
+    if (items.some((item) => !item.id || !item.question || !item.answer || !item.category)) {
+      return ['helpPosts.json 存在缺少 id、分类、问题或答案的记录'];
+    }
+  }
+
+  if (key === 'helpResources') {
+    if (items.some((item) => !item.id || !item.title || !item.description || !item.path)) {
+      return ['helpResources.json 存在缺少 id、标题、说明或路径的记录'];
+    }
+  }
+
   if (current && ['attendance', 'nowcoder', 'codeforces'].includes(key)) {
     const studentIds = new Set(current.students.map((item) => item.id));
     const periodIds = new Set(current.periods.map((item) => item.id));
@@ -92,7 +112,16 @@ export function validateDataSet(
 }
 
 export function validateAppData(data: AppData): string[] {
-  for (const key of ['students', 'periods', 'rules', 'attendance', 'nowcoder', 'codeforces'] as DataSetKey[]) {
+  for (const key of [
+    'students',
+    'periods',
+    'rules',
+    'attendance',
+    'nowcoder',
+    'codeforces',
+    'helpPosts',
+    'helpResources'
+  ] as DataSetKey[]) {
     const errors = validateDataSet(key, data[key], data);
     if (errors.length) return errors;
   }

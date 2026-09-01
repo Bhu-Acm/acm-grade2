@@ -7,7 +7,9 @@ const DATA_KEYS: DataSetKey[] = [
   'rules',
   'attendance',
   'nowcoder',
-  'codeforces'
+  'codeforces',
+  'helpPosts',
+  'helpResources'
 ];
 const API_BASE = 'https://api.github.com';
 const owner = import.meta.env.VITE_GITHUB_OWNER || 'Bhu-Acm';

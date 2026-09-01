@@ -1,0 +1,23 @@
+[
+  {
+    "id": "registration-pdf",
+    "title": "网站注册教程",
+    "description": "原始图文教程：浏览器扩展、脚本安装和五个平台注册。",
+    "path": "/help/website-registration.pdf",
+    "type": "PDF"
+  },
+  {
+    "id": "question-guide",
+    "title": "提问指南（独立思维能力）",
+    "description": "原始简版要求，已在帮助问答中补充为可执行的提问和排错流程。",
+    "path": "/help/question-guide.txt",
+    "type": "TEXT"
+  },
+  {
+    "id": "bhuacm-template",
+    "title": "BHUACM 板子",
+    "description": "原始 64 页竞赛模板，包含动态规划、图论、字符串、数学、数据结构和杂项。",
+    "path": "/help/bhuacm-template.pdf",
+    "type": "PDF"
+  }
+]

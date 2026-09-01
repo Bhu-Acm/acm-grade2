@@ -7,13 +7,16 @@ import {
   rules as initialRules,
   students as initialStudents
 } from './index';
+import { helpPosts as initialHelpPosts, helpResources as initialHelpResources } from './index';
 import type {
   AttendanceRecord,
   CodeforcesRecord,
   ExamPeriod,
   NowcoderContestScore,
   ScoringRule,
-  Student
+  Student,
+  HelpPost,
+  HelpResource
 } from '../types';
 import { validateAppData, validateDataSet, type DataSetKey } from '../domain/validation';
 
@@ -24,6 +27,8 @@ export interface AppData {
   attendance: AttendanceRecord[];
   nowcoder: NowcoderContestScore[];
   codeforces: CodeforcesRecord[];
+  helpPosts: HelpPost[];
+  helpResources: HelpResource[];
 }
 
 const STORAGE_KEY = 'acm-grade2:maintenance-data:v1';
@@ -39,7 +44,9 @@ function initialData(): AppData {
     rules: clone(initialRules),
     attendance: clone(initialAttendance),
     nowcoder: clone(initialNowcoder),
-    codeforces: clone(initialCodeforces)
+    codeforces: clone(initialCodeforces),
+    helpPosts: clone(initialHelpPosts),
+    helpResources: clone(initialHelpResources)
   };
 }
 
