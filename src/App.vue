@@ -28,5 +28,5 @@
 import { RouterLink, RouterView } from 'vue-router';
 import { githubConfig } from './services/github';
 
-const githubRepositoryUrl = `https://github.com/${githubConfig.owner}/${githubConfig.repo}`;
+const githubRepositoryUrl = githubConfig.repositoryUrl;
 </script>

@@ -15,11 +15,14 @@ const API_BASE = 'https://api.github.com';
 const owner = import.meta.env.VITE_GITHUB_OWNER || 'Bhu-Acm';
 const repo = import.meta.env.VITE_GITHUB_REPO || 'acm-grade2';
 const branch = import.meta.env.VITE_GITHUB_BRANCH || 'main';
+const repositoryUrl =
+  import.meta.env.VITE_GITHUB_REPOSITORY || `https://github.com/${owner}/${repo}`;
 
 export interface GithubConfig {
   owner: string;
   repo: string;
   branch: string;
+  repositoryUrl: string;
 }
 
 export interface GithubSyncResult {
@@ -60,7 +63,7 @@ interface GithubTreeResponse {
   message?: string;
 }
 
-export const githubConfig: GithubConfig = { owner, repo, branch };
+export const githubConfig: GithubConfig = { owner, repo, branch, repositoryUrl };
 
 function repositoryPath(key: DataSetKey): string {
   return `src/data/${key}.json`;
